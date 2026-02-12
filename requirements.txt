@@ -1,0 +1,29 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+python-socketio
+jinja2
+aiofiles
+
+# HTTP Clients
+httpx
+aiohttp
+
+# TTS Engines
+sounddevice
+soundfile
+numpy
+pypinyin
+deepl
+boto3
+
+# Security & Config
+python-dotenv
+cryptography
+cffi
+
+# Bilibili SDK
+blcsdk>=1.0.0
+
+# Kokoro TTS (uncomment if using local TTS)
+kokoro

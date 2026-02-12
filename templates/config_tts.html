@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Configuration</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: none;
+            color: var(--magenta);
+            -webkit-text-fill-color: initial;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        /* Two-column layout */
+        .panels-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .panels-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .config-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px var(--shadow-color);
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            color: var(--magenta);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-accent);
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .form-group select,
+        .form-group input[type="range"],
+        .form-group textarea {
+            width: 100%;
+        }
+
+        select {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--text-primary);
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover {
+            border-color: var(--blue);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.2);
+        }
+
+        select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--text-primary);
+            font-size: 1em;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+
+        textarea:hover {
+            border-color: var(--blue);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(38, 139, 210, 0.2);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            /* Darker track for visibility */
+            border-radius: 4px;
+            outline: none;
+            flex: 1;
+            border: 1px solid var(--border-color);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--magenta);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--magenta);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .speed-value {
+            min-width: 50px;
+            text-align: center;
+            background: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--magenta);
+        }
+
+        .speed-hint {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--magenta);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Test panel specific styles */
+        .btn-test {
+            background: var(--blue);
+        }
+
+        .btn-test:hover {
+            opacity: 0.9;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text-accent);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px var(--shadow-color);
+        }
+
+        .modal-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal .btn {
+            min-width: 120px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--bg-tertiary);
+            border-top-color: var(--magenta);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .spinner-small {
+            width: 20px;
+            height: 20px;
+            border-width: 3px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Error state */
+        .modal.error .modal-icon {
+            color: var(--red);
+        }
+
+        .modal.success .modal-icon {
+            color: var(--green);
+        }
+
+        .modal.loading .modal-icon {
+            color: var(--magenta);
+        }
+
+        /* Current config display */
+        .current-config {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 3px solid var(--magenta);
+        }
+
+        .current-config h3 {
+            font-size: 0.85em;
+            color: var(--magenta);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .current-config p {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+
+        .current-config span {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Audio player styling */
+        .audio-player-container {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .audio-player-container h4 {
+            font-size: 0.85em;
+            color: var(--blue);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .audio-player-container audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .test-status {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            min-height: 24px;
+        }
+
+        .test-status.generating {
+            color: var(--blue);
+        }
+
+        .test-status.error {
+            color: var(--red);
+        }
+
+        .test-status.ready {
+            color: var(--green);
+        }
+
+        /* Sample text presets */
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .preset-btn {
+            padding: 6px 12px;
+            font-size: 0.8em;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TTS Configuration</h1>
+            <p>Configure voice and speed settings for Text-to-Speech</p>
+        </div>
+
+        <div class="panels-container">
+            <!-- Left Panel: Configuration -->
+            <div class="config-card">
+                <h2 class="panel-title">Configuration Settings</h2>
+
+                <div class="current-config" id="currentConfig">
+                    <h3>Current Settings</h3>
+                    <p>Voice: <span id="currentVoice">Loading...</span></p>
+                    <p>Normal Speed: <span id="currentSpeedNormal">-</span></p>
+                    <p>Name Speed: <span id="currentSpeedName">-</span></p>
+                </div>
+
+                <form id="configForm">
+                    <div class="form-group">
+                        <label for="engine">TTS Engine</label>
+                        <select id="engine" name="engine">
+                            <option value="kokoro">Kokoro (Local - Offline)</option>
+                            <option value="aws_polly">AWS Polly (Cloud - Requires Credentials)</option>
+                        </select>
+                        <p class="speed-hint" id="engineHint" style="margin-top: 5px; color: #e74c3c; display: none;">
+                            Requires AWS credentials in .env file (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION)
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voice">Voice Selection</label>
+                        <select id="voice" name="voice">
+                            <option value="">Loading voices...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="speedNormal">Normal Text Speed</label>
+                        <div class="slider-container">
+                            <input type="range" id="speedNormal" name="speedNormal" min="0.3" max="2.0" step="0.1"
+                                value="0.7">
+                            <div class="speed-value" id="speedNormalValue">0.7</div>
+                        </div>
+                        <p class="speed-hint">Speed for regular message text (0.3 = slow, 2.0 = fast)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="speedName">Username Speed</label>
+                        <div class="slider-container">
+                            <input type="range" id="speedName" name="speedName" min="0.3" max="2.0" step="0.1"
+                                value="0.6">
+                            <div class="speed-value" id="speedNameValue">0.6</div>
+                        </div>
+                        <p class="speed-hint">Speed for reading usernames (slower for emphasis)</p>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" id="resetBtn">Reset to Defaults</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Save Changes</button>
+                    </div>
+                </form>
+
+                <a href="/" class="back-link">&larr; Back to Dashboard</a>
+            </div>
+
+            <!-- Right Panel: Voice Testing -->
+            <div class="config-card">
+                <h2 class="panel-title">Voice Preview</h2>
+
+                <div class="form-group">
+                    <label for="testVoice">Test Voice</label>
+                    <select id="testVoice" name="testVoice">
+                        <option value="">Loading voices...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="testSpeed">Test Speed (too slow of a speed will result in distortion)</label>
+                    <div class="slider-container">
+                        <input type="range" id="testSpeed" name="testSpeed" min="0.3" max="2.0" step="0.1" value="0.7">
+                        <div class="speed-value" id="testSpeedValue">0.7</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sample Text</label>
+                    <div class="preset-buttons">
+                        <button type="button" class="preset-btn" data-text="你好，这是一个语音测试。">Greeting</button>
+                        <button type="button" class="preset-btn" data-text="欢迎来到直播间，感谢您的关注和支持！">Welcome</button>
+                        <button type="button" class="preset-btn" data-text="谢谢老板的礼物，太感谢了！">Thanks</button>
+                        <button type="button" class="preset-btn" data-text="一二三四五六七八九十">Numbers</button>
+                    </div>
+                    <textarea id="testText" placeholder="Enter custom text to test...">你好，这是一个语音测试。</textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" id="copyFromConfigBtn">Copy from Config</button>
+                    <button type="button" class="btn btn-primary btn-test" id="testBtn">
+                        <span id="testBtnText">Generate Preview</span>
+                    </button>
+                </div>
+
+                <div class="audio-player-container">
+                    <h4>Audio Preview</h4>
+                    <div class="test-status" id="testStatus">Click "Generate Preview" to hear the voice</div>
+                    <audio id="audioPlayer" controls style="display: none;"></audio>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal-overlay" id="loadingModal">
+        <div class="modal loading">
+            <div class="spinner"></div>
+            <h2>Updating Configuration</h2>
+            <p>Please wait while the TTS engine is being reconfigured. Do not close this page.</p>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal success">
+            <div class="modal-icon">&#10004;</div>
+            <h2>Configuration Updated</h2>
+            <p>TTS settings have been saved successfully. New messages will use the updated settings.</p>
+            <button class="btn btn-primary" onclick="closeSuccessModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="modal error">
+            <div class="modal-icon">&#10006;</div>
+            <h2>Update Failed</h2>
+            <p id="errorMessage">An error occurred while updating the configuration.</p>
+            <button class="btn btn-primary" onclick="closeErrorModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Initial config setup from server injection
+        const initialConfig = {{ config | tojson | safe }};
+
+        // ==================
+        // Configuration Panel
+        // ==================
+        const engineSelect = document.getElementById('engine');
+        const engineHint = document.getElementById('engineHint');
+        const voiceSelect = document.getElementById('voice');
+        const speedNormalSlider = document.getElementById('speedNormal');
+        const speedNameSlider = document.getElementById('speedName');
+        const speedNormalValue = document.getElementById('speedNormalValue');
+        const speedNameValue = document.getElementById('speedNameValue');
+        const configForm = document.getElementById('configForm');
+        const saveBtn = document.getElementById('saveBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const currentVoice = document.getElementById('currentVoice');
+        const currentSpeedNormal = document.getElementById('currentSpeedNormal');
+        const currentSpeedName = document.getElementById('currentSpeedName');
+
+        const loadingModal = document.getElementById('loadingModal');
+        const successModal = document.getElementById('successModal');
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // ==================
+        // Test Panel
+        // ==================
+        const testVoiceSelect = document.getElementById('testVoice');
+        const testSpeedSlider = document.getElementById('testSpeed');
+        const testSpeedValue = document.getElementById('testSpeedValue');
+        const testTextArea = document.getElementById('testText');
+        const testBtn = document.getElementById('testBtn');
+        const testBtnText = document.getElementById('testBtnText');
+        const testStatus = document.getElementById('testStatus');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const copyFromConfigBtn = document.getElementById('copyFromConfigBtn');
+
+        // Default values from backend
+        const DEFAULTS = initialConfig.defaults || {
+            engine: 'kokoro',
+            voice: 'zm_yunjian',
+            speed_normal: 1.0,
+            speed_name: 0.9
+        };
+
+        if (!initialConfig.defaults) {
+            console.warn('TTS Defaults not found in initialConfig! using client-side fallbacks.');
+        }
+
+        let availableVoices = [];
+        let isGenerating = false;
+
+        // Engine select handler
+        engineSelect.addEventListener('change', function () {
+            const selectedEngine = engineSelect.value;
+            updateEngineHint();
+
+            // Show loading state
+            voiceSelect.innerHTML = '<option>Loading voices...</option>';
+            testVoiceSelect.innerHTML = '<option>Loading voices...</option>';
+
+            // Fetch voices for selected engine
+            fetch(`/api/tts/voices?engine=${selectedEngine}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        availableVoices = data.voices;
+                        // Select the first voice by default
+                        const defaultVoice = availableVoices.length > 0 ? availableVoices[0].value : '';
+
+                        populateVoiceDropdown(voiceSelect, availableVoices, defaultVoice);
+                        populateVoiceDropdown(testVoiceSelect, availableVoices, defaultVoice);
+                    } else {
+                        console.error('Failed to load voices:', data.error);
+                        voiceSelect.innerHTML = '<option value="">Error loading voices</option>';
+                        testVoiceSelect.innerHTML = '<option value="">Error loading voices</option>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching voices:', err);
+                    voiceSelect.innerHTML = '<option value="">Error loading voices</option>';
+                    testVoiceSelect.innerHTML = '<option value="">Error loading voices</option>';
+                });
+        });
+
+        function updateEngineHint() {
+            if (engineSelect.value === 'aws_polly') {
+                engineHint.style.display = 'block';
+            } else {
+                engineHint.style.display = 'none';
+            }
+        }
+
+        // Update slider value displays
+        speedNormalSlider.addEventListener('input', function () {
+            speedNormalValue.textContent = this.value;
+        });
+
+        speedNameSlider.addEventListener('input', function () {
+            speedNameValue.textContent = this.value;
+        });
+
+        testSpeedSlider.addEventListener('input', function () {
+            testSpeedValue.textContent = this.value;
+        });
+
+        // (initialConfig moved to top of script)
+
+        // Load current configuration
+        async function loadConfig() {
+            console.log('loadConfig started');
+            let hasInjectedConfig = false;
+
+            // Use server-injected config if available
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('Using server-injected TTS config:', initialConfig);
+                const data = initialConfig;
+
+                // Set engine selection
+                if (data.engine) {
+                    engineSelect.value = data.engine;
+                    updateEngineHint();
+                }
+
+                // Update engine availability display
+                if (data.is_aws_available !== undefined) {
+                    const awsOption = engineSelect.querySelector('option[value="aws_polly"]');
+                    if (awsOption) {
+                        awsOption.textContent = data.is_aws_available ? 'AWS Polly (Cloud)' : 'AWS Polly (Cloud) - Credentials Required';
+                    }
+                }
+
+                // Set slider values
+                speedNormalSlider.value = data.speed_normal;
+                speedNormalValue.textContent = data.speed_normal;
+                speedNameSlider.value = data.speed_name;
+                speedNameValue.textContent = data.speed_name;
+
+                // Set test panel defaults
+                testSpeedSlider.value = data.speed_normal;
+                testSpeedValue.textContent = data.speed_normal;
+
+                // Immediately populate voices if they were injected by the server
+                if (data.available_voices && data.available_voices.length > 0) {
+                    availableVoices = data.available_voices;
+                    populateVoiceDropdown(voiceSelect, availableVoices, data.voice);
+                    populateVoiceDropdown(testVoiceSelect, availableVoices, data.voice);
+                    hasInjectedConfig = true;
+                }
+
+                updateCurrentConfigDisplay(data);
+            }
+
+            // ONLY fetch if we don't have enough data from server injection
+            if (hasInjectedConfig) {
+                console.log('Skipping redundant config fetch as injected config is complete');
+                return;
+            }
+
+            console.log('Fetching config from API...');
+            try {
+                const response = await fetch('/api/tts/get_config');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                console.log('Fetched latest config:', data);
+
+                availableVoices = data.available_voices;
+
+                // Set engine selection
+                if (data.engine) {
+                    engineSelect.value = data.engine;
+                    updateEngineHint();
+                }
+
+                // Populate voice dropdowns
+                populateVoiceDropdown(voiceSelect, data.available_voices, data.voice);
+                populateVoiceDropdown(testVoiceSelect, data.available_voices, data.voice);
+
+                // Set slider values
+                speedNormalSlider.value = data.speed_normal;
+                speedNormalValue.textContent = data.speed_normal;
+                speedNameSlider.value = data.speed_name;
+                speedNameValue.textContent = data.speed_name;
+
+                updateCurrentConfigDisplay(data);
+                console.log('loadConfig finished successfully via API');
+
+            } catch (error) {
+                console.error('Failed to load config via fetch:', error);
+                // If we didn't have initialConfig, then this is a real error
+                if (!initialConfig || Object.keys(initialConfig).length === 0) {
+                    showError('Failed to load current configuration. Please refresh the page.');
+                }
+            }
+        }
+
+        function populateVoiceDropdown(selectElement, voices, selectedValue) {
+            console.log('Populating voices:', voices, 'selected:', selectedValue);
+            selectElement.innerHTML = '';
+
+            if (!voices || voices.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No voices available";
+                selectElement.appendChild(option);
+                return;
+            }
+
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.value;
+                option.textContent = voice.label;
+                if (voice.value === selectedValue) {
+                    option.selected = true;
+                }
+                selectElement.appendChild(option);
+            });
+            console.log('Voices populated successfully');
+        }
+
+        function updateCurrentConfigDisplay(data) {
+            const voiceLabel = voiceSelect.options[voiceSelect.selectedIndex]?.textContent || data.voice;
+            // Also update engine display if we had one... but current config connects to backend state
+            currentVoice.textContent = `${voiceLabel} (${data.engine || 'unknown'})`;
+            currentSpeedNormal.textContent = data.speed_normal;
+            currentSpeedName.textContent = data.speed_name;
+        }
+
+        // Save configuration
+        async function saveConfig(event) {
+            event.preventDefault();
+
+            const config = {
+                engine: engineSelect.value,
+                voice: voiceSelect.value,
+                speed_normal: parseFloat(speedNormalSlider.value),
+                speed_name: parseFloat(speedNameSlider.value)
+            };
+
+            loadingModal.classList.add('active');
+            saveBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/tts/update_config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+                loadingModal.classList.remove('active');
+
+                if (data.success) {
+                    // Update available voices from response (in case engine changed)
+                    if (data.available_voices) {
+                        availableVoices = data.available_voices;
+                        populateVoiceDropdown(voiceSelect, availableVoices, data.config.voice);
+                        populateVoiceDropdown(testVoiceSelect, availableVoices, data.config.voice);
+                    }
+
+                    updateCurrentConfigDisplay(data.config);
+                    successModal.classList.add('active');
+                } else {
+                    showError(data.error || 'Failed to update configuration');
+                }
+
+            } catch (error) {
+                loadingModal.classList.remove('active');
+                console.error('Failed to save config:', error);
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                saveBtn.disabled = false;
+                resetBtn.disabled = false;
+            }
+        }
+
+        function resetToDefaults() {
+            engineSelect.value = DEFAULTS.engine;
+            // Manually trigger change handler logic
+            updateEngineHint();
+
+            // Force reload voices for the default engine
+            const event = new Event('change');
+            engineSelect.dispatchEvent(event);
+
+            speedNormalSlider.value = DEFAULTS.speed_normal;
+            speedNormalValue.textContent = DEFAULTS.speed_normal;
+            speedNameSlider.value = DEFAULTS.speed_name;
+            speedNameValue.textContent = DEFAULTS.speed_name;
+
+            // Note: the dispatchEvent('change') will fetch voices and set the first one as default.
+            // If we want a specific default voice, we might need more logic here.
+            // But since DEFAULTS.voice belongs to DEFAULTS.engine, the fetch will eventually 
+            // set it if we provide the right context. 
+            // Actually, let's just let the change event handle it and then override if needed.
+            setTimeout(() => {
+                voiceSelect.value = DEFAULTS.voice;
+                testVoiceSelect.value = DEFAULTS.voice;
+            }, 300); // Wait for fetch to likely complete
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorModal.classList.add('active');
+        }
+
+        function closeSuccessModal() {
+            successModal.classList.remove('active');
+        }
+
+        function closeErrorModal() {
+            errorModal.classList.remove('active');
+        }
+
+        // ==================
+        // Test Panel Functions
+        // ==================
+
+        // Copy settings from config panel to test panel
+        copyFromConfigBtn.addEventListener('click', function () {
+            testVoiceSelect.value = voiceSelect.value;
+            testSpeedSlider.value = speedNormalSlider.value;
+            testSpeedValue.textContent = speedNormalSlider.value;
+        });
+
+        // Preset text buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                testTextArea.value = this.dataset.text;
+            });
+        });
+
+        // Generate test audio
+        async function generateTestAudio() {
+            if (isGenerating) return;
+
+            const text = testTextArea.value.trim();
+            if (!text) {
+                testStatus.textContent = 'Please enter some text to test';
+                testStatus.className = 'test-status error';
+                return;
+            }
+
+            isGenerating = true;
+            testBtn.disabled = true;
+            testBtnText.innerHTML = '<span class="spinner spinner-small"></span>Generating...';
+            testStatus.textContent = 'Generating audio preview...';
+            testStatus.className = 'test-status generating';
+            audioPlayer.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/tts/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        engine: engineSelect.value,  // Include selected engine
+                        voice: testVoiceSelect.value,
+                        speed: parseFloat(testSpeedSlider.value),
+                        text: text
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate audio');
+                }
+
+                // Create blob from response and set as audio source
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+
+                // Revoke previous URL if exists
+                if (audioPlayer.src && audioPlayer.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(audioPlayer.src);
+                }
+
+                audioPlayer.src = audioUrl;
+                audioPlayer.style.display = 'block';
+                testStatus.textContent = 'Audio ready! Click play to listen.';
+                testStatus.className = 'test-status ready';
+
+                // Auto-play the generated audio
+                audioPlayer.play().catch(e => {
+                    console.log('Auto-play prevented:', e);
+                });
+
+            } catch (error) {
+                console.error('Failed to generate test audio:', error);
+                testStatus.textContent = 'Error: ' + error.message;
+                testStatus.className = 'test-status error';
+            } finally {
+                isGenerating = false;
+                testBtn.disabled = false;
+                testBtnText.textContent = 'Generate Preview';
+            }
+        }
+
+        testBtn.addEventListener('click', generateTestAudio);
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function (e) {
+                if (e.target === this && this.id !== 'loadingModal') {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // Event listeners
+        configForm.addEventListener('submit', saveConfig);
+        resetBtn.addEventListener('click', resetToDefaults);
+
+        // Load config on page load
+        document.addEventListener('DOMContentLoaded', loadConfig);
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+</html>

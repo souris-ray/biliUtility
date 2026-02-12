@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configuration</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        /* Shared Styles from TTS Config */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: none;
+            color: var(--violet);
+            -webkit-text-fill-color: initial;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        .config-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px var(--shadow-color);
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            color: var(--violet);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-accent);
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 12px 15px;
+            padding-right: 45px;
+            color: var(--text-primary);
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--violet);
+            box-shadow: 0 0 10px rgba(108, 113, 196, 0.2);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            user-select: none;
+            font-size: 0.9em;
+        }
+
+        .toggle-password:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .btn-save {
+            background: var(--violet);
+            color: var(--bg-primary);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-back {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-back:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+
+        .alert-error {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--red);
+            color: var(--red);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>API Configuration</h1>
+            <p>Manage AWS Polly and DeepL credentials. Keys are encrypted on the server.</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="config-card">
+            <h2 class="panel-title">AWS Credentials (Polly)</h2>
+            <div class="form-group">
+                <label for="aws_access_key">AWS Access Key ID</label>
+                <div class="input-wrapper">
+                    <input type="password" id="aws_access_key" name="aws_access_key">
+                    <span class="toggle-password" onclick="toggleVisibility('aws_access_key')">👁️</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="aws_secret_key">AWS Secret Access Key</label>
+                <div class="input-wrapper">
+                    <input type="password" id="aws_secret_key" name="aws_secret_key">
+                    <span class="toggle-password" onclick="toggleVisibility('aws_secret_key')">👁️</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="aws_region">AWS Region</label>
+                <div class="input-wrapper">
+                    <input type="text" id="aws_region" name="aws_region" placeholder="us-east-1">
+                </div>
+            </div>
+
+            <h2 class="panel-title" style="margin-top: 40px;">DeepL Credentials</h2>
+            <div class="form-group">
+                <label for="deepl_auth_key">DeepL Authentication Key</label>
+                <div class="input-wrapper">
+                    <input type="password" id="deepl_auth_key" name="deepl_auth_key">
+                    <span class="toggle-password" onclick="toggleVisibility('deepl_auth_key')">👁️</span>
+                </div>
+            </div>
+
+            <h2 class="panel-title" style="margin-top: 40px;">Webhook URLs (Mix It Up)</h2>
+            <p style="color: #8e8ea0; font-size: 0.9em; margin-bottom: 20px;">Configure webhook URLs for guard member
+                celebration triggers. Enable webhooks in the Member Display configuration.</p>
+            <div class="form-group">
+                <label for="webhook_url_captain">Captain (舰长) Webhook URL</label>
+                <div class="input-wrapper">
+                    <input type="text" id="webhook_url_captain" name="webhook_url_captain"
+                        placeholder="https://api.mixitupapp.com/api/webhook/...">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="webhook_url_admiral">Admiral (提督) Webhook URL</label>
+                <div class="input-wrapper">
+                    <input type="text" id="webhook_url_admiral" name="webhook_url_admiral"
+                        placeholder="https://api.mixitupapp.com/api/webhook/...">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="webhook_url_governor">Governor (总督) Webhook URL</label>
+                <div class="input-wrapper">
+                    <input type="text" id="webhook_url_governor" name="webhook_url_governor"
+                        placeholder="https://api.mixitupapp.com/api/webhook/...">
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <a href="/" class="btn btn-back">← Dashboard</a>
+                <button class="btn btn-save" onclick="saveCredentials()">Save and Encrypt</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleVisibility(id) {
+            const input = document.getElementById(id);
+            const span = input.nextElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                span.textContent = '🔒';
+            } else {
+                input.type = 'password';
+                span.textContent = '👁️';
+            }
+        }
+
+        // Initial config setup from server injection
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+
+        async function loadCredentials() {
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('Using server-injected credentials');
+                const creds = initialConfig;
+                document.getElementById('aws_access_key').value = creds.aws_access_key || '';
+                document.getElementById('aws_secret_key').value = creds.aws_secret_key || '';
+                document.getElementById('aws_region').value = creds.aws_region || 'us-east-1';
+                document.getElementById('deepl_auth_key').value = creds.deepl_auth_key || '';
+                document.getElementById('webhook_url_captain').value = creds.webhook_url_captain || '';
+                document.getElementById('webhook_url_admiral').value = creds.webhook_url_admiral || '';
+                document.getElementById('webhook_url_governor').value = creds.webhook_url_governor || '';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/credentials');
+                const data = await response.json();
+                if (data.success) {
+                    const creds = data.credentials;
+                    document.getElementById('aws_access_key').value = creds.aws_access_key || '';
+                    document.getElementById('aws_secret_key').value = creds.aws_secret_key || '';
+                    document.getElementById('aws_region').value = creds.aws_region || 'us-east-1';
+                    document.getElementById('deepl_auth_key').value = creds.deepl_auth_key || '';
+                    document.getElementById('webhook_url_captain').value = creds.webhook_url_captain || '';
+                    document.getElementById('webhook_url_admiral').value = creds.webhook_url_admiral || '';
+                    document.getElementById('webhook_url_governor').value = creds.webhook_url_governor || '';
+                }
+            } catch (err) {
+                showAlert('Failed to load credentials', 'error');
+            }
+        }
+
+        async function saveCredentials() {
+            const creds = {
+                aws_access_key: document.getElementById('aws_access_key').value.trim(),
+                aws_secret_key: document.getElementById('aws_secret_key').value.trim(),
+                aws_region: document.getElementById('aws_region').value.trim(),
+                deepl_auth_key: document.getElementById('deepl_auth_key').value.trim(),
+                webhook_url_captain: document.getElementById('webhook_url_captain').value.trim(),
+                webhook_url_admiral: document.getElementById('webhook_url_admiral').value.trim(),
+                webhook_url_governor: document.getElementById('webhook_url_governor').value.trim()
+            };
+
+            const btn = document.querySelector('.btn-save');
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(creds)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('Credentials saved and encrypted successfully!', 'success');
+                } else {
+                    showAlert('Error: ' + data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Failed to connect to server', 'error');
+            } finally {
+                btn.textContent = 'Save and Encrypt';
+                btn.disabled = false;
+            }
+        }
+
+        function showAlert(msg, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = msg;
+            alert.className = 'alert alert-' + type;
+            alert.style.display = 'block';
+            setTimeout(() => { alert.style.display = 'none'; }, 5000);
+        }
+
+        window.onload = loadCredentials;
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+</html>

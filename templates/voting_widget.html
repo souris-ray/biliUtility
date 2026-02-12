@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voting Widget</title>
+  <style>
+    @import url('https://fonts.cdnfonts.com/css/terminus-ttf');
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Terminus (TTF)', 'Terminus', 'Menlo', 'Monaco', 'Consolas', monospace;
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .voting-container {
+      position: relative;
+      background: linear-gradient(135deg, rgba(90, 79, 119, 0.9) 0%, rgba(156, 108, 140, 0.9) 100%);
+      border-radius: 15px;
+      margin: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+      opacity: 1;
+      transition: opacity 0.5s ease, all 0.3s ease;
+    }
+
+    .voting-container.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .widget-title {
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #E8D57C 0%, #CAAD8E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    #voteList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #voteList li {
+      background: rgba(0, 0, 0, 0.4);
+      margin: 12px 0;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .vote-label {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #E8D57C 0%, #CAAD8E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .progress {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      height: 28px;
+    }
+
+    .progress-inner {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .progress-inner::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .percent-text {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95em;
+      font-weight: bold;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+      color: #fff;
+      z-index: 2;
+    }
+
+    .count-text {
+      float: right;
+      font-size: 0.9em;
+      color: rgba(255, 255, 255, 0.8);
+      margin-left: 10px;
+    }
+
+    .progress-0 {
+      background: linear-gradient(90deg, #3498db 0%, #D6EFFF 100%);
+    }
+
+    .progress-1 {
+      background: linear-gradient(90deg, #9b59b6 0%, #F2D6FF 100%);
+    }
+
+    .progress-2 {
+      background: linear-gradient(90deg, #e74c3c 0%, #FFD9D6 100%);
+    }
+
+    .progress-3 {
+      background: linear-gradient(90deg, #f39c12 0%, #FFEED6 100%);
+    }
+
+    .progress-4 {
+      background: linear-gradient(90deg, #27ae60 0%, #D6FFE7 100%);
+    }
+
+    .progress-5 {
+      background: linear-gradient(90deg, #e91e63 0%, #FFD6E4 100%);
+    }
+
+    .progress-6 {
+      background: linear-gradient(90deg, #00bcd4 0%, #D6FAFF 100%);
+    }
+
+    .progress-7 {
+      background: linear-gradient(90deg, #E8D57C 0%, #FFFAD6 100%);
+    }
+
+    .progress-8 {
+      background: linear-gradient(90deg, #8e44ad 0%, #F2D6FF 100%);
+    }
+
+    .progress-9 {
+      background: linear-gradient(90deg, #515ada 0%, #efd5ff 100%);
+    }
+
+    #reminder {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 1.1em;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+
+<body>
+  <div id="mainContainer" class="voting-container hidden">
+    <div class="widget-title" id="widgetTitle"></div>
+    <ul id="voteList"></ul>
+    <p id="reminder">在直播间输入选项对应数字即可参与投票！</p>
+  </div>
+
+  <script>
+    const socket = io();
+    const mainContainer = document.getElementById('mainContainer');
+    const titleEl = document.getElementById('widgetTitle');
+    const listEl = document.getElementById('voteList');
+
+    // Initial state setup from server injection
+    const initialState = JSON.parse('{{ state | default ({}) | tojson | safe }}');
+
+    console.log("[VotingWidget] Initializing...");
+
+    // Connect and listen for updates
+    socket.on('connect', () => {
+      console.log("[VotingWidget] Socket connected");
+    });
+
+    socket.on('voting:update', (state) => {
+      console.log("[VotingWidget] Received update:", state);
+      updateWidget(state);
+    });
+
+    // Initialize from injected state or fetch if missing
+    if (initialState && Object.keys(initialState).length > 0) {
+      console.log("[VotingWidget] Using server-injected state");
+      updateWidget(initialState);
+    } else {
+      // Also fetch initial state in case vote is already running
+      fetch('/api/voting/state')
+        .then(r => r.json())
+        .then(state => {
+          console.log("[VotingWidget] Initial state:", state);
+          updateWidget(state);
+        })
+        .catch(e => console.error("[VotingWidget] Failed to fetch state:", e));
+    }
+
+    function hexToRgba(hex, alpha) {
+      let c;
+      if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        c = hex.substring(1).split('');
+        if (c.length == 3) {
+          c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+      }
+      return hex;
+    }
+
+    function applyStyleToElement(el, style, isText = false) {
+      if (!style) return;
+      const alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+      const alphaColors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+      let bgString = '';
+
+      if (style.type === 'solid') {
+        bgString = alphaColors[0];
+      } else if (style.type === 'linear') {
+        let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+        bgString = `linear-gradient(${style.angle || 90}deg, ${colors.join(', ')})`;
+      } else if (style.type === 'radial') {
+        let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+        bgString = `radial-gradient(circle, ${colors.join(', ')})`;
+      }
+
+      if (isText) {
+        if (style.type === 'solid') {
+          el.style.background = 'none';
+          el.style.webkitBackgroundClip = 'unset';
+          el.style.backgroundClip = 'unset';
+          el.style.webkitTextFillColor = 'unset';
+          el.style.color = alphaColors[0];
+        } else {
+          el.style.background = bgString;
+          el.style.webkitBackgroundClip = 'text';
+          el.style.backgroundClip = 'text';
+          el.style.webkitTextFillColor = 'transparent';
+          el.style.color = 'transparent';
+        }
+        el.style.textShadow = style.shadow_size > 0 ? `0 0 ${style.shadow_size}px ${style.shadow_color}` : 'none';
+      } else {
+        el.style.background = bgString;
+        el.style.backdropFilter = style.glass_blur > 0 ? `blur(${style.glass_blur}px)` : 'none';
+        el.style.boxShadow = style.shadow_size > 0 ? `0 0 ${style.shadow_size}px ${style.shadow_color}` : 'none';
+        el.style.border = style.border_width > 0 ? `${style.border_width}px solid ${style.border_color}` : 'none';
+      }
+    }
+
+    function updateWidget(state) {
+      if (!state) return;
+
+      const options = state.options || [];
+      const voteCounts = state.vote_counts || [];
+      const hasContent = options.length > 0;
+
+      if (hasContent) {
+        mainContainer.classList.remove('hidden');
+      } else {
+        mainContainer.classList.add('hidden');
+        return;
+      }
+
+      // Apply overall styles
+      applyStyleToElement(mainContainer, state.background_style);
+      applyStyleToElement(titleEl, state.title_style, true);
+
+      // Visibility toggles
+      titleEl.style.display = state.show_title === false ? 'none' : 'block';
+      if (state.show_background === false) {
+        mainContainer.style.background = 'none';
+        mainContainer.style.border = 'none';
+        mainContainer.style.boxShadow = 'none';
+        mainContainer.style.backdropFilter = 'none';
+      }
+
+      // Update title
+      titleEl.textContent = state.title || 'Chat Voting';
+
+      // Rebuild options list only if needed
+      const currentListIds = Array.from(listEl.children).map(li => li.id);
+      const newListIds = options.map(opt => `vote-${typeof opt === 'object' ? opt.idx : opt}`);
+
+      if (JSON.stringify(currentListIds) !== JSON.stringify(newListIds)) {
+        listEl.innerHTML = '';
+        options.forEach((opt, index) => {
+          const optIdx = typeof opt === 'object' ? opt.idx : index;
+          const optText = typeof opt === 'object' ? opt.text : opt;
+
+          const li = document.createElement('li');
+          li.id = `vote-${optIdx}`;
+          li.innerHTML = `
+            <div class="vote-label">
+              <span class="label-text">${optIdx}: ${optText}</span>
+              <span class="count-text">0 votes</span>
+            </div>
+            <div class="progress">
+              <div class="progress-inner"></div>
+              <div class="percent-text">0%</div>
+            </div>
+          `;
+          listEl.appendChild(li);
+        });
+      }
+
+      // Update counts and apply styles
+      const total = voteCounts.reduce((a, b) => a + b, 0);
+      const displayTotal = total || 0;
+
+      options.forEach((opt, i) => {
+        const optIdx = typeof opt === 'object' ? opt.idx : i;
+        const count = voteCounts[i] || 0;
+        const percent = displayTotal > 0 ? Math.round((count / displayTotal) * 100) : 0;
+
+        const li = document.getElementById(`vote-${optIdx}`);
+        if (li) {
+          const label = li.querySelector('.vote-label');
+          const barContainer = li.querySelector('.progress');
+          const barFill = li.querySelector('.progress-inner');
+          const pText = li.querySelector('.percent-text');
+          const cText = li.querySelector('.count-text');
+
+          // Apply styles
+          applyStyleToElement(label, state.option_style, true);
+          applyStyleToElement(barContainer, state.bar_bg_style);
+          applyStyleToElement(barFill, state.bar_fill_style);
+          applyStyleToElement(pText, state.bar_text_style, true);
+
+          if (label) {
+            const labelText = label.querySelector('.label-text');
+            if (labelText) labelText.textContent = `${optIdx}: ${typeof opt === 'object' ? opt.text : opt}`;
+            // cText is already inside label from the template
+          }
+          if (barFill) barFill.style.width = `${percent}%`;
+          if (pText) pText.textContent = `${percent}%`;
+          if (cText) cText.textContent = `${count} votes`;
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

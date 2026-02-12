@@ -1,0 +1,8 @@
+{
+  "name": "BiliUtility Dashboard",
+  "version": "2.0.0",
+  "author": "Souris Ray",
+  "description": "VTuber streaming dashboard with TTS, statistics, and widgets. Features Kokoro TTS for Chinese, DeepL translation, guard/superchat webhooks, and customizable OBS widgets.",
+  "run": "biliutility.exe",
+  "enabled": true
+}

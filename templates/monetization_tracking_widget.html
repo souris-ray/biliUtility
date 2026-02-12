@@ -1,0 +1,605 @@
+<!-- templates/monetization_tracking_widget.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gift Counter Widget</title>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/terminus-ttf');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            font-family: 'Terminus (TTF)', 'Terminus', 'Menlo', 'Monaco', 'Consolas', monospace;
+            overflow: hidden;
+        }
+
+        .counter-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            /* Stying applied via JS */
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            width: 400px;
+            overflow: hidden;
+            /* Force clipping of corners */
+            background-clip: padding-box;
+            /* Avoid bleeding under border */
+            transition: background-color 0.3s, opacity 0.3s, box-shadow 0.3s;
+        }
+
+
+        .counter-label {
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .counter-value {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        .milestone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .milestone-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #E8D57C;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .milestone-count {
+            font-size: 20px;
+            font-weight: bold;
+            color: #E8D57C;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #E8D57C 0%, #C87041 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease-out;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .milestone-celebration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            font-weight: bold;
+            color: #C87041;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            opacity: 0;
+            animation: celebrate 2s ease-out;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .gift-alert {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            opacity: 0;
+            animation: fadeInOut 3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .gift-username {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .gift-details {
+            font-size: 24px;
+            color: #4ecdc4;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes celebrate {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5) rotate(-45deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5) rotate(15deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(2) rotate(45deg);
+            }
+        }
+    </style>
+    <script src="/static/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="counter-container">
+        <!-- REMOVED: Total value and count display
+        <div class="counter-item">
+            <span class="counter-label">礼物总价值:</span>
+            <span class="counter-value" id="totalValue">¥0.0</span>
+        </div>
+        <div class="counter-item">
+            <span class="counter-label">礼物总数:</span>
+            <span class="counter-value" id="totalCount">0</span>
+        </div>
+        -->
+
+        <div class="milestone-section">
+            <div class="milestone-header">
+                <span class="milestone-label">惩罚轮盘进度</span>
+                <span class="milestone-count">×<span id="milestoneCount">0</span></span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div class="progress-text">
+                <span id="progressValue">0</span> / 500
+            </div>
+        </div>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <script>
+        const socket = io();
+
+        // Tracking variables
+        let totalValue = 0;
+        let totalCount = 0;
+        let milestoneProgress = 0;
+        let milestoneCount = 0;
+        let milestoneGoal = 500;
+        let widgetConfig = {}; // Full config object
+
+        // Initialize from injected config if available (server-side rendering)
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+        if (initialConfig && typeof initialConfig === 'object' && Object.keys(initialConfig).length > 0) {
+            console.log('Server-injected config type:', typeof initialConfig);
+            widgetConfig = initialConfig;
+            milestoneGoal = widgetConfig.milestone_goal || 500;
+            if (widgetConfig.current_progress !== undefined) milestoneProgress = widgetConfig.current_progress;
+            if (widgetConfig.milestone_count !== undefined) milestoneCount = widgetConfig.milestone_count;
+
+            // Immediate render to prevent FOUC
+            // setTimeout ensures function hoisting is complete and DOM is stable, though script is at bottom
+            setTimeout(() => {
+                renderWidget();
+                updateMilestoneDisplay();
+            }, 0);
+        }
+
+        // Helper: Convert hex to rgba
+        function hexToRgba(hex, alpha) {
+            let c;
+            if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+                c = hex.substring(1).split('');
+                if (c.length == 3) {
+                    c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                }
+                c = '0x' + c.join('');
+                return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+            }
+            return hex; // Fallback
+        }
+
+        // Apply style object to element (for background and title)
+        function applyStyleToElement(el, style, isText) {
+            let alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+
+            let bgString = '';
+            if (style.type === 'solid') {
+                bgString = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+
+            if (isText) {
+                if (style.type === 'solid') {
+                    el.style.background = 'none';
+                    el.style.webkitBackgroundClip = 'unset';
+                    el.style.backgroundClip = 'unset';
+                    el.style.webkitTextFillColor = 'unset';
+                    el.style.color = colors[0];
+                } else {
+                    el.style.background = bgString;
+                    el.style.webkitBackgroundClip = 'text';
+                    el.style.backgroundClip = 'text';
+                    el.style.webkitTextFillColor = 'transparent';
+                    el.style.color = 'transparent';
+                }
+            } else {
+                el.style.background = bgString;
+            }
+
+            // Shadows
+            if (style.shadow_size > 0) {
+                // Text shadow vs box shadow
+                if (isText) {
+                    el.style.textShadow = `0 0 ${style.shadow_size}px ${style.shadow_color || '#000000'}`;
+                    el.style.boxShadow = 'none';
+                } else {
+                    el.style.boxShadow = `0 0 ${style.shadow_size}px ${style.shadow_color || '#000000'}`;
+                    el.style.textShadow = 'none';
+                }
+            } else {
+                el.style.boxShadow = 'none';
+                el.style.textShadow = 'none';
+            }
+
+            // Borders (only for box)
+            if (!isText) {
+                if (style.border_width > 0) {
+                    el.style.border = `${style.border_width}px solid ${style.border_color || '#ffffff'}`;
+                } else {
+                    el.style.border = 'none';
+                }
+            }
+
+            // Glass Blur (only for box)
+            if (!isText && style.glass_blur > 0) {
+                el.style.backdropFilter = `blur(${style.glass_blur}px)`;
+                el.style.webkitBackdropFilter = `blur(${style.glass_blur}px)`;
+            } else if (!isText) {
+                el.style.backdropFilter = 'none';
+                el.style.webkitBackdropFilter = 'none';
+            }
+
+            // OBS clipping fix
+            if (!isText) {
+                el.style.overflow = 'hidden';
+                el.style.backgroundClip = 'padding-box';
+            }
+        }
+
+        // Render widget with styles from config
+        function renderWidget() {
+            const container = document.querySelector('.counter-container');
+            const titleLabel = document.querySelector('.milestone-label');
+            const countEl = document.querySelector('.milestone-count');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.querySelector('.progress-text');
+
+            // Apply background style
+            if (widgetConfig.show_background === false) {
+                container.style.background = 'transparent';
+                container.style.boxShadow = 'none';
+                container.style.border = 'none';
+                container.style.backdropFilter = 'none';
+            } else {
+                if (widgetConfig.background_style) {
+                    applyStyleToElement(container, widgetConfig.background_style, false);
+                } else {
+                    // Default background - must be set by JS for OBS compatibility
+                    container.style.background = widgetConfig.background_color || '#5A4F77';
+                    container.style.boxShadow = 'none';
+                    container.style.border = 'none';
+                }
+            }
+
+            // Apply title style and text
+            if (widgetConfig.show_title === false) {
+                titleLabel.style.display = 'none';
+            } else {
+                titleLabel.style.display = '';
+                titleLabel.textContent = widgetConfig.title_text || '惩罚轮盘进度';
+                if (widgetConfig.title_style) {
+                    applyStyleToElement(titleLabel, widgetConfig.title_style, true);
+                }
+            }
+
+            // Apply count color
+            if (widgetConfig.count_color) {
+                countEl.style.color = widgetConfig.count_color;
+            }
+
+            // Apply progress bar gradient
+            const startColor = widgetConfig.progress_bar_start_color || '#E8D57C';
+            const endColor = widgetConfig.progress_bar_end_color || '#C87041';
+            progressBar.style.background = `linear-gradient(90deg, ${startColor} 0%, ${endColor} 100%)`;
+
+            // Apply label color
+            if (widgetConfig.label_color) {
+                progressText.style.color = widgetConfig.label_color;
+            }
+        }
+
+        // Load config from API
+        async function loadMilestoneConfig() {
+            try {
+                const response = await fetch('/api/gifts/get_config');
+                widgetConfig = await response.json();
+                milestoneGoal = widgetConfig.milestone_goal || 500;
+
+                // Load current progress and count if available
+                if (widgetConfig.current_progress !== undefined) {
+                    milestoneProgress = widgetConfig.current_progress;
+                }
+                if (widgetConfig.milestone_count !== undefined) {
+                    milestoneCount = widgetConfig.milestone_count;
+                }
+
+                // Apply all styles
+                renderWidget();
+
+                // Update progress display
+                updateMilestoneDisplay();
+                const progressBar = document.getElementById('progressBar');
+                const percentage = Math.min((milestoneProgress / milestoneGoal) * 100, 100);
+                progressBar.style.width = `${percentage}%`;
+                document.getElementById('milestoneCount').textContent = milestoneCount;
+                document.getElementById('progressValue').textContent = milestoneProgress.toFixed(1);
+
+                console.log('Loaded milestone config:', milestoneGoal, 'progress:', milestoneProgress, 'count:', milestoneCount);
+            } catch (error) {
+                console.error('Failed to load milestone config:', error);
+            }
+        }
+
+        // Update the milestone goal display text
+        function updateMilestoneDisplay() {
+            const progressText = document.querySelector('.progress-text');
+            if (progressText) {
+                progressText.innerHTML = `<span id="progressValue">${milestoneProgress.toFixed(1)}</span> / ${milestoneGoal}`;
+            }
+        }
+
+        // UPDATED: This function still updates internal values but doesn't update UI
+        function updateCounters(value, count) {
+            totalValue = value;
+            totalCount = count;
+
+            // REMOVED: UI updates for total value and count
+            /*
+            const valueEl = document.getElementById('totalValue');
+            const countEl = document.getElementById('totalCount');
+            
+            valueEl.textContent = `¥${totalValue.toFixed(1)}`;
+            countEl.textContent = totalCount;
+            
+            // Trigger pulse animation
+            valueEl.style.animation = 'none';
+            countEl.style.animation = 'none';
+            setTimeout(() => {
+                valueEl.style.animation = 'pulse 0.5s ease-in-out';
+                countEl.style.animation = 'pulse 0.5s ease-in-out';
+            }, 10);
+            */
+        }
+
+        // Update milestone progress
+        function updateMilestone(progress, count) {
+            const oldCount = milestoneCount;
+            milestoneProgress = progress;
+            milestoneCount = count;
+
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progressValue = document.getElementById('progressValue');
+            const milestoneCountEl = document.getElementById('milestoneCount');
+
+            const percentage = Math.min((milestoneProgress / milestoneGoal) * 100, 100);
+            progressBar.style.width = `${percentage}%`;
+            progressValue.textContent = milestoneProgress.toFixed(1);
+            milestoneCountEl.textContent = milestoneCount;
+
+            // Celebrate for EACH new milestone achieved (sequentially)
+            if (oldCount !== undefined && milestoneCount > oldCount) {
+                const celebrationCount = milestoneCount - oldCount;
+                for (let i = 0; i < celebrationCount; i++) {
+                    // Each animation is 2 seconds, so stagger by 2000ms to play sequentially
+                    setTimeout(() => showMilestoneCelebration(), i * 2000);
+                }
+            }
+        }
+
+        // Show milestone celebration
+        function showMilestoneCelebration() {
+            const alertContainer = document.getElementById('alertContainer');
+
+            const celebrationDiv = document.createElement('div');
+            celebrationDiv.className = 'milestone-celebration';
+            celebrationDiv.textContent = '惩罚轮盘达成！🎉';
+
+            alertContainer.appendChild(celebrationDiv);
+
+            setTimeout(() => {
+                celebrationDiv.remove();
+            }, 2000);
+        }
+
+        // Show gift alert
+        // function showGiftAlert(username, giftName, quantity, value) {
+        //     const alertContainer = document.getElementById('alertContainer');
+
+        //     const alertDiv = document.createElement('div');
+        //     alertDiv.className = 'gift-alert';
+        //     alertDiv.innerHTML = `
+        //         <div class="gift-username">${username}</div>
+        //         <div class="gift-details">${giftName} x${quantity} (¥${value})</div>
+        //     `;
+
+        //     alertContainer.appendChild(alertDiv);
+
+        //     // Remove alert after animation completes
+        //     setTimeout(() => {
+        //         alertDiv.remove();
+        //     }, 3000);
+        // }
+
+        // Socket.io event handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            loadMilestoneConfig();
+        });
+
+        // Listen for config updates from the server
+        socket.on('gifts:config_updated', (data) => {
+            // Store full config
+            widgetConfig = data;
+            milestoneGoal = data.milestone_goal || milestoneGoal;
+
+            // Update with recalculated values from server
+            if (data.milestone_progress !== undefined) {
+                milestoneProgress = data.milestone_progress;
+            }
+            if (data.milestone_count !== undefined) {
+                milestoneCount = data.milestone_count;
+            }
+
+            // Re-render widget with new styles
+            renderWidget();
+
+            // Update display
+            updateMilestoneDisplay();
+            const progressBar = document.getElementById('progressBar');
+            const percentage = Math.min((milestoneProgress / milestoneGoal) * 100, 100);
+            progressBar.style.width = `${percentage}%`;
+            document.getElementById('milestoneCount').textContent = milestoneCount;
+            document.getElementById('progressValue').textContent = milestoneProgress.toFixed(1);
+
+            // Trigger celebration for each NEW milestone (sequentially, one after another)
+            const celebrationCount = data.celebration_count || 0;
+            for (let i = 0; i < celebrationCount; i++) {
+                // Each animation is 2 seconds, so stagger by 2000ms to play sequentially
+                setTimeout(() => showMilestoneCelebration(), i * 2000);
+            }
+
+            console.log('Config updated - goal:', milestoneGoal, 'celebrations:', celebrationCount);
+        });
+
+        socket.on('initial_state', (state) => {
+            // UPDATED: Still calling updateCounters to track internally
+            updateCounters(state.paid_gift_total_value, state.paid_gift_count);
+            if (state.milestone_progress !== undefined) {
+                updateMilestone(state.milestone_progress, state.milestone_count);
+            }
+        });
+
+        socket.on('paid_gift', (data) => {
+            // UPDATED: Still tracking internally
+            updateCounters(data.total_value, data.total_count);
+            updateMilestone(data.milestone_progress, data.milestone_count);
+            // Note: showGiftAlert is commented out, so not calling it
+            // showGiftAlert(data.username, data.gift_name, data.quantity, data.value);
+        });
+
+        socket.on('superchat', (data) => {
+            updateMilestone(data.milestone_progress, data.milestone_count);
+        });
+
+        socket.on('guard', (data) => {
+            updateMilestone(data.milestone_progress, data.milestone_count);
+        });
+    </script>
+</body>
+
+</html>

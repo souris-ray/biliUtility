@@ -1,0 +1,744 @@
+<!-- templates/tts_widget.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Control Widget</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/terminus-ttf');
+
+        body,
+        body * {
+            user-select: text;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            font-family: 'Terminus (TTF)', 'Terminus', 'Menlo', 'Monaco', 'Consolas', monospace;
+            color: white;
+            overflow: hidden;
+        }
+
+        .tts-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--border-color);
+        }
+
+        .tts-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--magenta);
+            text-shadow: 0 0 20px var(--shadow-color);
+        }
+
+        .control-panel {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch.active {
+            background-color: #9370DB;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .status-bar {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--magenta);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-skip {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+        }
+
+        .btn-mark-read {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .message-list {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .message-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            position: relative;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .message-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(147, 112, 219, 0.3);
+        }
+
+        /* Different background colors for SC and Guard */
+        .message-item.superchat {
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .message-item.guard {
+            background: rgba(0, 0, 255, 0.1);
+        }
+
+        /* Read state - darker background */
+        .message-item.read {
+            background: rgba(0, 0, 0, 0.6) !important;
+            opacity: 0.7;
+        }
+
+        .message-item.playing {
+            border-color: #9370DB;
+            animation: pulse 2s infinite;
+        }
+
+        .message-item.queued {
+            border-color: #E8D57C;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-username {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--blue);
+        }
+
+        .message-type {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(147, 112, 219, 0.3);
+            margin-right: 60px;
+            /* Space for play button */
+        }
+
+        .message-type.superchat {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .message-type.guard {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+        }
+
+        .message-text {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .command-text {
+            color: #ff6b6b;
+            font-weight: bold;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .command-highlight {
+            color: #ff6b6b;
+            font-weight: bold;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .message-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            /* Increased from 12px */
+        }
+
+        .info-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 10px;
+            /* Increased padding */
+            border-radius: 4px;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 5px;
+            font-weight: bold;
+        }
+
+        .info-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            /* Larger font for translation and pinyin */
+        }
+
+        .play-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9370DB 0%, #BA55D3 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(147, 112, 219, 0.5);
+        }
+
+        .play-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .now-playing {
+            background: linear-gradient(135deg, #9370DB 0%, #BA55D3 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .now-playing.active {
+            display: block;
+        }
+
+        .now-playing-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+
+        .now-playing-text {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(147, 112, 219, 0.5);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(147, 112, 219, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(147, 112, 219, 0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar styling */
+        .message-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .message-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .message-list::-webkit-scrollbar-thumb {
+            background: rgba(147, 112, 219, 0.5);
+            border-radius: 4px;
+        }
+
+        .message-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(147, 112, 219, 0.7);
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="tts-container">
+        <div class="tts-header">🔊 TTS Control Panel</div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-row">
+                <span class="control-label">Auto-play All Unread Messages</span>
+                <div class="toggle-switch" id="autoplayToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-label">Queue Size</div>
+                <div class="status-value" id="queueSize">0</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Status</div>
+                <div class="status-value" id="playStatus">Idle</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Unread</div>
+                <div class="status-value" id="unreadCount">0</div>
+            </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="control-buttons">
+            <button class="control-btn btn-skip" id="skipBtn">⏭️ Skip Current</button>
+            <button class="control-btn btn-clear" id="clearBtn">🗑️ Clear Queue</button>
+            <button class="control-btn btn-mark-read" id="markReadBtn">✅ Mark All Read</button>
+        </div>
+
+        <!-- Now Playing -->
+        <div class="now-playing" id="nowPlaying">
+            <div class="now-playing-label">Now Playing</div>
+            <div class="now-playing-text" id="nowPlayingText"></div>
+        </div>
+
+        <!-- Message List -->
+        <div class="message-list" id="messageList">
+            <!-- Messages will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const messages = new Map();
+        const readState = new Map(); // Track read/unread state locally
+        let currentlyPlaying = null;
+        let queuedMessages = new Set();
+        let isAutoplayActive = false;
+
+        // Toggle switch
+        const autoplayToggle = document.getElementById('autoplayToggle');
+
+        // Status elements
+        const queueSize = document.getElementById('queueSize');
+        const playStatus = document.getElementById('playStatus');
+        const unreadCount = document.getElementById('unreadCount');
+        const nowPlaying = document.getElementById('nowPlaying');
+        const nowPlayingText = document.getElementById('nowPlayingText');
+
+        // Control buttons
+        const skipBtn = document.getElementById('skipBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const markReadBtn = document.getElementById('markReadBtn');
+
+        // Message list
+        const messageList = document.getElementById('messageList');
+
+        // Toggle event handler
+        autoplayToggle.addEventListener('click', () => {
+            isAutoplayActive = !isAutoplayActive;
+            autoplayToggle.classList.toggle('active', isAutoplayActive);
+
+            // Emit toggle event
+            socket.emit('tts:toggle_autoplay', { enabled: isAutoplayActive });
+        });
+
+        // Button event handlers
+        skipBtn.addEventListener('click', () => {
+            socket.emit('tts:skip_current');
+        });
+
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Clear all queued messages?')) {
+                socket.emit('tts:clear_queue');
+            }
+        });
+
+        markReadBtn.addEventListener('click', () => {
+            // Mark all as read locally
+            messages.forEach((msg, id) => {
+                readState.set(id, true);
+                updateMessageReadState(id, true);
+            });
+            updateUnreadCount();
+            socket.emit('tts:mark_all_read');
+        });
+
+        // Create message element
+        function createMessageElement(msg) {
+            const div = document.createElement('div');
+            div.className = `message-item ${msg.type}`;
+            div.dataset.uniqueId = msg.unique_id;
+
+            // Check if message is read
+            const isRead = readState.get(msg.unique_id) || msg.played || false;
+            if (isRead) {
+                div.classList.add('read');
+            }
+
+            // Use formatted_text if available, otherwise use text
+            const displayText = msg.formatted_text || msg.text;
+
+            // Build type badge with amount for superchat
+            let typeBadge = msg.type.toUpperCase();
+            if (msg.type === 'superchat' && msg.amount !== undefined) {
+                typeBadge = `SC ¥${msg.amount}`;
+            }
+
+            div.innerHTML = `
+                <div class="message-header">
+                    <span class="message-username">${msg.username}</span>
+                    <span class="message-type ${msg.type}">${typeBadge}</span>
+                </div>
+                <div class="message-text">${displayText}</div>
+                <div class="message-info">
+                    ${msg.translation ? `<div class="info-section">
+                        <span class="info-label">EN:</span>
+                        <span class="info-value">${msg.translation}</span>
+                    </div>` : ''}
+                    ${msg.pinyin ? `<div class="info-section">
+                        <span class="info-label">Pinyin:</span>
+                        <span class="info-value">${msg.pinyin}</span>
+                    </div>` : ''}
+                </div>
+                <button class="play-button" onclick="playMessage('${msg.unique_id}')">▶</button>
+            `;
+
+
+            // Add double-click handler
+            div.addEventListener('dblclick', (e) => {
+                if (e.target.classList.contains('play-button')) return;
+                toggleReadState(msg.unique_id);
+            });
+
+            return div;
+        }
+
+        // Toggle read state
+        function toggleReadState(uniqueId) {
+            const currentState = readState.get(uniqueId) || false;
+            const newState = !currentState;
+            readState.set(uniqueId, newState);
+            updateMessageReadState(uniqueId, newState);
+            updateUnreadCount();
+
+            // Emit state change to server
+            socket.emit('tts:toggle_read', { unique_id: uniqueId, is_read: newState });
+        }
+
+        // Update message read state visually
+        function updateMessageReadState(uniqueId, isRead) {
+            const element = document.querySelector(`[data-unique-id="${uniqueId}"]`);
+            if (element) {
+                if (isRead) {
+                    element.classList.add('read');
+                } else {
+                    element.classList.remove('read');
+                }
+            }
+        }
+
+        // Update unread count
+        function updateUnreadCount() {
+            let count = 0;
+            messages.forEach((msg, id) => {
+                if (!readState.get(id)) {
+                    count++;
+                }
+            });
+            unreadCount.textContent = count;
+        }
+
+        // Play message function
+        function playMessage(uniqueId) {
+            socket.emit('tts:play_message', { unique_id: uniqueId });
+        }
+
+        // (Auto-play logic removed: now handled by backend)
+
+        // Update message status
+        function updateMessageStatus(uniqueId, status) {
+            const element = document.querySelector(`[data-unique-id="${uniqueId}"]`);
+            if (!element) return;
+
+            element.classList.remove('playing', 'queued');
+            const playButton = element.querySelector('.play-button');
+
+            switch (status) {
+                case 'playing':
+                    element.classList.add('playing');
+                    playButton.disabled = true;
+                    break;
+                case 'queued':
+                    element.classList.add('queued');
+                    playButton.disabled = false;  // Ensure button is enabled when queued
+                    break;
+                default:
+                    // Re-enable button when no specific status
+                    playButton.disabled = false;
+            }
+        }
+
+        // Socket event handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit('tts:get_history');
+        });
+
+        socket.on('tts:status', (data) => {
+            if (data.autoplay !== undefined) {
+                isAutoplayActive = data.autoplay;
+                autoplayToggle.classList.toggle('active', isAutoplayActive);
+            }
+            queueSize.textContent = data.queue_size;
+            playStatus.textContent = data.is_playing ? 'Playing' : 'Idle';
+        });
+
+        socket.on('tts:new_message', (msg) => {
+            messages.set(msg.unique_id, msg);
+            // New messages are unread by default
+            readState.set(msg.unique_id, false);
+
+            const element = createMessageElement(msg);
+            // messageList.insertBefore(element, messageList.firstChild);
+            messageList.appendChild(element);
+            updateUnreadCount();
+        });
+
+        socket.on('tts:history', (data) => {
+            messageList.innerHTML = '';
+            data.messages.forEach(msg => {
+                messages.set(msg.unique_id, msg);
+                // Set read state based on played status
+                readState.set(msg.unique_id, msg.played || false);
+
+                const element = createMessageElement(msg);
+                messageList.appendChild(element);
+            });
+            updateUnreadCount();
+        });
+
+        socket.on('tts:message_queued', (data) => {
+            queuedMessages.add(data.unique_id);
+            updateMessageStatus(data.unique_id, 'queued');
+            queueSize.textContent = data.queue_size;
+        });
+
+        socket.on('tts:now_playing', (data) => {
+            currentlyPlaying = data.unique_id;
+            updateMessageStatus(data.unique_id, 'playing');
+            playStatus.textContent = 'Playing';
+
+            nowPlaying.classList.add('active');
+            if (data.is_command) {
+                // Remove the "Playing Command: " prefix if present or use it for styling
+                const command = data.text.replace('Playing Command: ', '');
+                nowPlayingText.innerHTML = `<span class="command-highlight">Audio Command:</span> ${command}`;
+            } else {
+                nowPlayingText.textContent = `${data.username}: ${data.text}`;
+            }
+        });
+
+        socket.on('tts:playback_complete', (data) => {
+            // Mark as read when playback completes
+            readState.set(data.unique_id, true);
+            updateMessageReadState(data.unique_id, true);
+            updateUnreadCount();
+
+            queuedMessages.delete(data.unique_id);
+
+            // Re-enable the play button
+            const element = document.querySelector(`[data-unique-id="${data.unique_id}"]`);
+            if (element) {
+                element.classList.remove('playing');
+                element.querySelector('.play-button').disabled = false;
+            }
+
+            if (currentlyPlaying === data.unique_id) {
+                currentlyPlaying = null;
+                playStatus.textContent = 'Idle';
+                nowPlaying.classList.remove('active');
+            }
+        });
+
+        socket.on('tts:queue_cleared', (data) => {
+            queuedMessages.clear();
+            queueSize.textContent = data.queue_size;
+
+            // Remove queued status from all messages
+            document.querySelectorAll('.message-item.queued').forEach(el => {
+                el.classList.remove('queued');
+            });
+        });
+
+        socket.on('tts:all_marked_read', () => {
+            messages.forEach((msg, id) => {
+                readState.set(id, true);
+                updateMessageReadState(id, true);
+            });
+            updateUnreadCount();
+        });
+
+        socket.on('tts:skipped', () => {
+            if (currentlyPlaying) {
+                const element = document.querySelector(`[data-unique-id="${currentlyPlaying}"]`);
+                if (element) {
+                    element.classList.remove('playing');
+                    element.querySelector('.play-button').disabled = false;
+                }
+            }
+            currentlyPlaying = null;
+            playStatus.textContent = 'Idle';
+            nowPlaying.classList.remove('active');
+        });
+
+        socket.on('tts:read_state_changed', (data) => {
+            readState.set(data.unique_id, data.is_read);
+            updateMessageReadState(data.unique_id, data.is_read);
+            updateUnreadCount();
+        });
+    </script>
+</body>
+
+</html>

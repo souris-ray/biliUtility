@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>VTuber Widget Dashboard</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            /* Bg/Color/Font handled by theme.css */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--magenta);
+            /* Accent for header */
+            margin-bottom: 30px;
+        }
+
+        .widget-list {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .widget-item {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .widget-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .widget-item h2 {
+            color: var(--blue);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        .widget-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .widget-item a:hover {
+            color: var(--blue);
+        }
+
+        .widget-item p {
+            color: var(--text-secondary);
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .widget-url {
+            background-color: var(--bg-primary);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: var(--font-main);
+            font-size: 0.9em;
+            color: var(--yellow);
+            margin-top: 10px;
+            word-break: break-all;
+            border: 1px solid var(--border-color);
+        }
+
+        .widget-badge {
+            display: inline-block;
+            background-color: var(--orange);
+            color: var(--base3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+
+        .widget-badge.new {
+            background-color: var(--green);
+        }
+
+        .section-title {
+            color: var(--violet);
+            text-align: center;
+            margin: 40px 0 20px 0;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .instructions {
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid var(--cyan);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .instructions h3 {
+            color: var(--cyan);
+            margin-top: 0;
+        }
+
+        .instructions ul {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .instructions code {
+            background-color: var(--bg-primary);
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: var(--orange);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-content">
+        <h1>
+            VTuber Widget Dashboard
+            <button id="resetLoginBtn" class="reset-btn">Reset Login</button>
+        </h1>
+
+        <div class="instructions">
+            <h3>📝 How to Use</h3>
+            <ul>
+                <li>Each widget can be added to OBS as a Browser Source</li>
+                <li>Copy the URL from the widget and paste it into OBS</li>
+                <li>Recommended size: <code>1920x1080</code> (adjust as needed)</li>
+                <li>Enable <code>Shutdown source when not visible</code> for performance</li>
+                <li>For transparent backgrounds, ensure <code>Custom CSS</code> is empty</li>
+            </ul>
+        </div>
+
+        <div class="section-title">Display Widgets</div>
+
+        <div class="widget-list">
+            <div class="widget-item">
+                <h2>Monetization Tracking Widget</h2>
+                <p>Displays milestone progress for punishment wheel (惩罚轮盘) and gift animations</p>
+                <p>URL for OBS Browser Source:</p>
+                <div class="widget-url">http://localhost:5149/widget/gifts</div>
+                <p><a href="/widget/gifts" target="_blank">Open Widget →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Members Progress Widget</h2>
+                <p>Shows guard purchase progress (冲舰进程) with milestone rewards</p>
+                <p>URL for OBS Browser Source:</p>
+                <div class="widget-url">http://localhost:5149/widget/guards</div>
+                <p><a href="/widget/guards" target="_blank">Open Widget →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Voting Widget</h2>
+                <p>Interactive voting system for viewers using chat numbers</p>
+                <p>URL for OBS Browser Source:</p>
+                <div class="widget-url">http://localhost:5149/widget/voting</div>
+                <p><a href="/widget/voting" target="_blank">Open Widget →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Members Display Widget</h2>
+                <p>Animated welcome display for new guard members with rank-specific animations</p>
+                <p>URL for OBS Browser Source:</p>
+                <div class="widget-url">http://localhost:5149/widget/members</div>
+                <p><a href="/widget/members" target="_blank">Open Widget →</a></p>
+            </div>
+        </div>
+
+        <div class="section-title">Control Widgets</div>
+
+        <div class="widget-list">
+            <div class="widget-item">
+                <h2>TTS Control Panel</h2>
+                <p>Text-to-speech control for superchats and guard purchases. Includes auto-play options, queue
+                    management,
+                    and translation display.</p>
+                <p>URL for OBS Browser Source:</p>
+                <div class="widget-url">http://localhost:5149/widget/tts</div>
+                <p><a href="/widget/tts" target="_blank">Open Widget →</a></p>
+            </div>
+        </div>
+
+        <div class="section-title">Configuration</div>
+
+        <div class="widget-list">
+            <div class="widget-item">
+                <h2>TTS Configuration</h2>
+                <p>Configure TTS voice and speed settings. Changes apply immediately to new messages without requiring a
+                    restart.</p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/tts</div>
+                <p><a href="/config/tts" target="_blank">Open Configuration →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Monetization Tracking Configuration</h2>
+                <p>Configure milestone goal amount for the punishment wheel progress bar. Changes recalculate progress
+                    in
+                    real-time.</p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/gifts</div>
+                <p><a href="/config/gifts" target="_blank">Open Configuration →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Members Progress Configuration</h2>
+                <p>Configure progress bar levels, ranges, and upload custom reward images for each stage.</p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/members_progress</div>
+                <p><a href="/config/members_progress" target="_blank">Open Configuration →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Members Display Configuration</h2>
+                <p>Preview guard member celebration animations for Captain, Admiral, and Governor tiers. View session
+                    statistics.</p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/members</div>
+                <p><a href="/config/members" target="_blank">Open Configuration →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Sound Command Configuration</h2>
+                <p>Customize TTS sound triggers and manage audio files. Add own custom sounds and map them to text
+                    commands.
+                </p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/sounds</div>
+                <p><a href="/config/sounds" target="_blank">Open Configuration →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>Voting Configuration</h2>
+                <p>Setup poll title and options. Start, stop, and reset voting sessions.</p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/voting</div>
+                <p><a href="/config/voting" target="_blank">Open Configuration →</a></p>
+            </div>
+
+            <div class="widget-item">
+                <h2>API Credentials</h2>
+                <p>Configure AWS and DeepL API keys. Keys are stored encrypted on the server.</p>
+                <p>URL:</p>
+                <div class="widget-url">http://localhost:5149/config/api</div>
+                <p><a href="/config/api" target="_blank">Open Configuration →</a></p>
+            </div>
+        </div>
+
+        <div class="instructions" style="margin-top: 40px;">
+            <h3>⚙️ Customization & Setup Guide</h3>
+            <ul>
+                <li><strong>Visual Themes:</strong> Use the toggle in the top-right to switch between <strong>Solarized
+                        Light</strong> and <strong>Dark</strong> modes. These settings persist across sessions.</li>
+                <li><strong>Member Display:</strong> Upload your custom GIFs and set preview images directly through the
+                    UI. Customize Info Card colors, transparency, and "Thank You" messages in the configuration page.
+                </li>
+                <li><strong>Member Progress:</strong> Configure progress bar levels, milestone rewards, and custom
+                    reward images entirely through the dashboard.</li>
+                <li><strong>TTS & Translation:</strong> Uses <strong>Kokoro</strong> for high-quality local voice
+                    generation. Configure your <strong>DeepL</strong> or <strong>AWS</strong> keys in the API
+                    Credentials page for translation and cloud voices.</li>
+                <li><strong>Sound Commands:</strong> Upload audio files and map them to custom chat triggers (e.g.,
+                    <code>!play [sound]</code>) directly via the Sound Configuration page.
+                </li>
+                <li><strong>Webhooks:</strong> Configure <strong>Mix It Up</strong> or other webhook URLs in the API
+                    Credentials page to sync guard animations with external software or lighting systems.</li>
+                <li><strong>Security:</strong> All sensitive API keys and credentials are stored securely and
+                    encrypted on the server, managed via the <strong>API Credentials</strong> dashboard.
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="configModal" class="config-modal">
+        <div class="config-modal-content">
+            <h2 class="config-title">Bilibili Configuration</h2>
+
+            <!-- Step 1: Input Form -->
+            <div id="inputSection">
+                <p class="config-description">Please enter your Bilibili credentials to continue</p>
+
+                <div class="form-group">
+                    <label for="roomIdInput">Room ID (房间号) *</label>
+                    <input type="text" id="roomIdInput" placeholder="e.g., 12345678" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="uidInput">UID (用户ID) *</label>
+                    <input type="text" id="uidInput" placeholder="e.g., 87654321" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="logDirInput">Log Directory (Optional)</label>
+                    <input type="text" id="logDirInput" placeholder="Leave empty to use default">
+                </div>
+
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+                <button id="validateBtn" class="btn-primary">Validate Credentials</button>
+            </div>
+
+            <!-- Step 2: Confirmation -->
+            <div id="confirmSection" style="display: none;">
+                <div class="user-confirmation">
+                    <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <h3 id="username"></h3>
+                        <p id="userDesc"></p>
+                    </div>
+                </div>
+
+                <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                    <label style="display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <input type="checkbox" id="rememberMe" checked style="width: auto; margin-right: 10px;">
+                        Remember me on this device
+                    </label>
+                </div>
+
+                <p class="confirm-question">Is this you?</p>
+
+                <div class="button-group">
+                    <button id="confirmBtn" class="btn-primary">Yes, Continue</button>
+                    <button id="cancelBtn" class="btn-secondary">No, Re-enter</button>
+                </div>
+            </div>
+
+            <div id="loadingMessage" class="loading-message" style="display: none;">
+                <div class="spinner"></div>
+                <p>Validating credentials...</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Modal Styles */
+        .config-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .config-modal-content {
+            background-color: #2a2a2a;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .config-title {
+            color: #4ecdc4;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .config-description {
+            color: #cccccc;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: #4ecdc4;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #3db8af;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            width: 48%;
+            padding: 14px;
+            background-color: #444;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 4%;
+        }
+
+        .button-group .btn-primary {
+            width: 48%;
+        }
+
+        .error-message {
+            background-color: #ff6b6b;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-confirmation {
+            display: flex;
+            align-items: center;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 20px;
+            border: 3px solid #4ecdc4;
+        }
+
+        .user-info h3 {
+            color: #4ecdc4;
+            margin: 0 0 8px 0;
+            font-size: 1.5em;
+        }
+
+        .user-info p {
+            color: #cccccc;
+            margin: 0;
+        }
+
+        .confirm-question {
+            color: #ffffff;
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .loading-message {
+            text-align: center;
+            color: #4ecdc4;
+        }
+
+        .spinner {
+            border: 4px solid #444;
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+        }
+
+        .reset-btn {
+            float: right;
+            padding: 8px 16px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .reset-btn:hover {
+            background-color: #ff5252;
+        }
+    </style>
+
+    <script>
+        // Configuration state
+        let validatedData = null;
+
+        // DOM elements
+        const modal = document.getElementById('configModal');
+        const inputSection = document.getElementById('inputSection');
+        const confirmSection = document.getElementById('confirmSection');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        const roomIdInput = document.getElementById('roomIdInput');
+        const uidInput = document.getElementById('uidInput');
+        const logDirInput = document.getElementById('logDirInput');
+
+        const validateBtn = document.getElementById('validateBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const resetLoginBtn = document.getElementById('resetLoginBtn');
+
+        const userAvatar = document.getElementById('userAvatar');
+        const username = document.getElementById('username');
+        const userDesc = document.getElementById('userDesc');
+
+        // Check configuration status on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Check if already configured via API
+            try {
+                const response = await fetch('/api/get_config');
+                const data = await response.json();
+
+                if (data.is_configured) {
+                    console.log('Configuration already active:', data.username);
+                    return; // Already configured, don't show modal
+                }
+            } catch (error) {
+                console.error('Error checking config status:', error);
+            }
+
+            // Check localStorage for saved configuration
+            const savedConfig = localStorage.getItem('bilibili_config');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    console.log('Found saved configuration, attempting to restore...');
+
+                    // Attempt to start monitoring with saved config
+                    const response = await fetch('/api/start_monitoring', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(config)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        console.log('Restored configuration successfully');
+                        return; // Successfully restored, don't show modal
+                    } else {
+                        console.warn('Saved configuration is invalid, clearing...');
+                        localStorage.removeItem('bilibili_config');
+                    }
+                } catch (error) {
+                    console.error('Error restoring saved config:', error);
+                    localStorage.removeItem('bilibili_config');
+                }
+            }
+
+            // No valid configuration found, show modal
+            modal.style.display = 'block';
+        });
+
+        // Validate credentials button handler
+        validateBtn.addEventListener('click', async () => {
+            const roomId = roomIdInput.value.trim();
+            const uid = uidInput.value.trim();
+            const logDir = logDirInput.value.trim();
+
+            // Basic validation
+            if (!roomId || !uid) {
+                showError('Please enter both Room ID and UID');
+                return;
+            }
+
+            if (!/^\d+$/.test(roomId) || !/^\d+$/.test(uid)) {
+                showError('Room ID and UID must be numeric values');
+                return;
+            }
+
+            // Show loading state
+            hideError();
+            inputSection.style.display = 'none';
+            loadingMessage.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/validate_credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        room_id: roomId,
+                        uid: uid,
+                        log_dir: logDir || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store validated data
+                    validatedData = {
+                        room_id: roomId,
+                        uid: uid,
+                        log_dir: logDir || null,
+                        username: data.username
+                    };
+
+                    // Show confirmation section
+                    userAvatar.src = data.face;
+                    username.textContent = data.username;
+                    userDesc.textContent = data.desc || 'No description available';
+
+                    loadingMessage.style.display = 'none';
+                    confirmSection.style.display = 'block';
+                } else {
+                    // Show error and return to input
+                    loadingMessage.style.display = 'none';
+                    inputSection.style.display = 'block';
+                    showError(data.error || 'Invalid credentials. Please check and try again.');
+                }
+            } catch (error) {
+                console.error('Validation error:', error);
+                loadingMessage.style.display = 'none';
+                inputSection.style.display = 'block';
+                showError('Network error. Please check your connection and try again.');
+            }
+        });
+
+        // Confirm button handler
+        confirmBtn.addEventListener('click', async () => {
+            if (!validatedData) {
+                showError('No validated data available');
+                return;
+            }
+
+            // Show loading state
+            confirmSection.style.display = 'none';
+            loadingMessage.style.display = 'block';
+
+            // Start monitoring
+            try {
+                const configData = {
+                    room_id: validatedData.room_id.toString(),
+                    uid: validatedData.uid.toString(),
+                    username: validatedData.username,
+                    log_dir: validatedData.log_dir || null
+                };
+
+                const response = await fetch('/api/start_monitoring', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(configData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Check if remember me is checked
+                    const rememberMe = document.getElementById('rememberMe').checked;
+                    if (rememberMe) {
+                        localStorage.setItem('bilibili_config', JSON.stringify(configData));
+                    } else {
+                        localStorage.removeItem('bilibili_config');
+                    }
+
+                    modal.style.display = 'none';
+                    resetLoginBtn.style.display = 'block'; // Show reset button after successful config
+                    console.log('Configuration complete:', result.username);
+                } else {
+                    loadingMessage.style.display = 'none';
+                    confirmSection.style.display = 'block';
+                    showError(result.error || 'Failed to start monitoring. Please try again.');
+                }
+            } catch (error) {
+                console.error('Start monitoring error:', error);
+                loadingMessage.style.display = 'none';
+                confirmSection.style.display = 'block';
+                showError('Network error. Please check your connection and try again.');
+            }
+        });
+
+        // Cancel button handler
+        cancelBtn.addEventListener('click', () => {
+            // Reset to input section
+            validatedData = null;
+            confirmSection.style.display = 'none';
+            inputSection.style.display = 'block';
+            hideError();
+        });
+
+        // Reset Login Button Logic
+        resetLoginBtn.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to reset your login configuration? You will need to re-enter your credentials.')) {
+                try {
+                    // 1. Clear server config
+                    await fetch('/api/reset_config', { method: 'POST' });
+
+                    // 2. Clear local storage
+                    localStorage.removeItem('bilibili_config');
+
+                    // 3. Reload page to show modal
+                    location.reload();
+                } catch (error) {
+                    console.error('Error resetting config:', error);
+                    alert('Failed to reset configuration on server.');
+                }
+            }
+        });
+
+        // Helper functions
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+</html>

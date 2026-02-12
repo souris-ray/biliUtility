@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Configuration</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--cyan);
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        .back-link {
+            color: var(--red);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--orange);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        .panel {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            color: var(--text-accent);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--blue);
+            outline: none;
+        }
+
+        .options-container {
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .option-index {
+            background: var(--blue);
+            color: var(--base3);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+
+        .remove-option-btn {
+            background: transparent;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 4px 8px;
+        }
+
+        .remove-option-btn:hover {
+            color: var(--orange);
+            background: rgba(220, 50, 47, 0.1);
+            border-radius: 4px;
+        }
+
+        .add-option-btn {
+            background: transparent;
+            border: 2px dashed var(--border-color);
+            color: var(--text-secondary);
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .add-option-btn:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            flex: 1;
+            font-size: 1em;
+            color: var(--bg-primary);
+        }
+
+        .btn:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-start {
+            background-color: var(--green);
+        }
+
+        .btn-stop {
+            background-color: var(--red);
+            color: #fff;
+        }
+
+        .btn-reset {
+            background-color: var(--yellow);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+        }
+
+        .status-indicator.active {
+            background-color: var(--green);
+            box-shadow: 0 0 10px var(--green);
+        }
+
+        .status-text {
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+
+        .status-text.active {
+            color: var(--green);
+        }
+
+        .preview-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--border-color);
+        }
+
+        .url-card {
+            background-color: var(--bg-primary);
+            border-left: 4px solid var(--cyan);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .url-text {
+            font-family: var(--font-main);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: rgba(42, 161, 152, 0.1);
+        }
+
+        .style-preview-box {
+            width: 100px;
+            height: 40px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow-y: auto;
+            padding: 40px 0;
+        }
+
+        .modal-content {
+            background-color: var(--bg-tertiary);
+            margin: 0 auto;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px var(--shadow-color);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .modal-footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .style-option-row {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .color-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            background: var(--bg-secondary);
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        #modalPreview {
+            width: 100%;
+            height: 100px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            background-image:
+                linear-gradient(45deg, #333 25%, transparent 25%),
+                linear-gradient(-45deg, #333 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #333 75%),
+                linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .voting-preview-box {
+            background: linear-gradient(135deg, rgba(90, 79, 119, 0.8) 0%, rgba(156, 108, 140, 0.8) 100%);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px var(--shadow-color);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            color: white;
+            min-height: 300px;
+            max-height: 600px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .preview-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #E8D57C 0%, #CAAD8E 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .preview-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .preview-item {
+            background: rgba(0, 0, 0, 0.4);
+            margin: 12px 0;
+            padding: 16px;
+            border-radius: 10px;
+        }
+
+        .preview-label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #E8D57C 0%, #CAAD8E 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .preview-progress-bar {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            height: 24px;
+        }
+
+        .preview-progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.6s ease-out;
+        }
+
+        .preview-percent {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .fill-0 {
+            background: linear-gradient(90deg, #3498db 0%, #D6EFFF 100%);
+        }
+
+        .fill-1 {
+            background: linear-gradient(90deg, #9b59b6 0%, #F2D6FF 100%);
+        }
+
+        .fill-2 {
+            background: linear-gradient(90deg, #e74c3c 0%, #FFD9D6 100%);
+        }
+
+        .fill-3 {
+            background: linear-gradient(90deg, #f39c12 0%, #FFEED6 100%);
+        }
+
+        .fill-4 {
+            background: linear-gradient(90deg, #27ae60 0%, #D6FFE7 100%);
+        }
+
+        .fill-5 {
+            background: linear-gradient(90deg, #e91e63 0%, #FFD6E4 100%);
+        }
+
+        .fill-6 {
+            background: linear-gradient(90deg, #00bcd4 0%, #D6FAFF 100%);
+        }
+
+        .fill-7 {
+            background: linear-gradient(90deg, #E8D57C 0%, #FFFAD6 100%);
+        }
+
+        .fill-8 {
+            background: linear-gradient(90deg, #8e44ad 0%, #F2D6FF 100%);
+        }
+
+        .fill-9 {
+            background: linear-gradient(90deg, #515ada 0%, #efd5ff 100%);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 40px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Voting Configuration</h1>
+            <a href="/" class="back-link">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="config-grid">
+            <div class="panel">
+                <h2 class="panel-title">Controls</h2>
+
+                <div class="status-container">
+                    <div id="statusDot" class="status-indicator"></div>
+                    <span id="statusText" class="status-text">Not Started</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Poll Title</label>
+                    <input type="text" id="pollTitle" placeholder="e.g. Which fruit is best?">
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 20px; align-items: center;">
+                    <div>
+                        <label>Title Style</label>
+                        <div id="titlePreview" class="style-preview-box"></div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn btn-reset" style="padding: 8px 15px; font-size:0.85em;"
+                                onclick="openStyleEditor('title')">Customize</button>
+                            <label class="toggle-container"
+                                style="margin: 0; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: var(--text-secondary);">
+                                <input type="checkbox" id="showTitleToggle" checked
+                                    onchange="toggleVisibility('title')">
+                                Show
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <label>Option Text Style</label>
+                        <div id="optionStylePreview" class="style-preview-box"></div>
+                        <button class="btn btn-reset" style="padding: 8px 15px; font-size:0.85em;"
+                            onclick="openStyleEditor('option')">Customize</button>
+                    </div>
+                    <div>
+                        <label>Bar Background Style</label>
+                        <div id="barBgPreview" class="style-preview-box"></div>
+                        <button class="btn btn-reset" style="padding: 8px 15px; font-size:0.85em;"
+                            onclick="openStyleEditor('bar_bg')">Customize</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <label>Bar Fill Style</label>
+                        <div id="barFillPreview" class="style-preview-box"></div>
+                        <button class="btn btn-reset" style="padding: 8px 15px; font-size:0.85em;"
+                            onclick="openStyleEditor('bar_fill')">Customize</button>
+                    </div>
+                    <div>
+                        <label>Percentage Text Style</label>
+                        <div id="barTextStylePreview" class="style-preview-box"></div>
+                        <button class="btn btn-reset" style="padding: 8px 15px; font-size:0.85em;"
+                            onclick="openStyleEditor('bar_text')">Customize</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 20px; align-items: center;">
+                    <div>
+                        <label>Background Style</label>
+                        <div id="bgPreview" class="style-preview-box"></div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn btn-reset" style="padding: 8px 15px; font-size:0.85em;"
+                                onclick="openStyleEditor('background')">Customize</button>
+                            <label class="toggle-container"
+                                style="margin: 0; display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: var(--text-secondary);">
+                                <input type="checkbox" id="showBgToggle" checked
+                                    onchange="toggleVisibility('background')">
+                                Show
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-reset" style="width: 100%;" onclick="saveVisibilitySettings()">Save
+                        Visibility Settings</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Poll Options</label>
+                    <div id="optionsList" class="options-container"></div>
+                    <button class="add-option-btn" onclick="addOption()">+ Add Option</button>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="startBtn" class="btn btn-start" onclick="startVoting()">Start</button>
+                    <button id="stopBtn" class="btn btn-stop" onclick="stopVoting()" disabled>Stop</button>
+                    <button id="resetBtn" class="btn btn-reset" onclick="resetVoting()">Reset</button>
+                </div>
+            </div>
+
+            <div class="preview-container">
+                <div class="url-card">
+                    <div>
+                        <div style="color: #4ecdc4; font-weight: bold; margin-bottom: 5px;">OBS Browser Source URL</div>
+                        <div class="url-text">http://localhost:5149/widget/voting</div>
+                    </div>
+                    <button class="copy-btn" onclick="copyUrl()">Copy</button>
+                </div>
+
+                <h3 style="color: #ccc; margin-top: 0;">Live Preview</h3>
+                <div class="voting-preview-box">
+                    <div id="previewTitle" class="preview-title"></div>
+                    <ul id="previewList" class="preview-list"></ul>
+                    <div id="emptyState" class="empty-state">
+                        Add options and click Start to begin voting
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let isActive = false;
+        let currentState = {
+            title: "Chat Voting",
+            title_style: { type: 'linear', colors: ['#E8D57C', '#CAAD8E'], angle: 135, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: '#ffffff', border_width: 0 },
+            show_title: true,
+            background_style: { type: 'linear', colors: ['rgba(90, 79, 119, 0.8)', 'rgba(156, 108, 140, 0.8)'], angle: 135, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: 'rgba(255, 215, 0, 0.3)', border_width: 2 },
+            show_background: true,
+            option_style: { type: 'linear', colors: ['#E8D57C', '#CAAD8E'], angle: 135, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: '#ffffff', border_width: 0 },
+            bar_bg_style: { type: 'solid', colors: ['rgba(0, 0, 0, 0.3)'], angle: 90, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: '#ffffff', border_width: 0 },
+            bar_fill_style: { type: 'linear', colors: ['#3498db', '#D6EFFF'], angle: 90, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: '#ffffff', border_width: 0 },
+            bar_text_style: { type: 'solid', colors: ['#ffffff'], angle: 90, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 4, border_color: '#ffffff', border_width: 0 },
+            options: [],
+            vote_counts: [],
+            is_active: false
+        };
+
+        let editingTarget = null; // 'title' or 'background'
+        let currentEditorStyle = {};
+
+        // --- Initialization ---
+        window.onload = () => {
+            console.log("[VotingConfig] Page loaded");
+            setupSocket();
+            loadInitialState();
+            // Set up event listener for title input
+            document.getElementById('pollTitle').addEventListener('input', () => {
+                currentState.title = document.getElementById('pollTitle').value;
+                updatePreview();
+            });
+        };
+
+        // Initial config setup from server injection
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+
+        async function loadInitialState() {
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('Using server-injected voting state');
+                syncFromServer(initialConfig);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/voting/state');
+                const data = await res.json();
+                syncFromServer(data);
+            } catch (e) {
+                console.error("Failed to load initial state:", e);
+                // Fallback to defaults
+                addOption('');
+                addOption('');
+                updatePreview();
+            }
+        }
+
+        function setupSocket() {
+            socket.on('connect', () => console.log('[VotingConfig] Socket connected'));
+            socket.on('voting:update', (state) => {
+                console.log('[VotingConfig] Socket update:', state);
+                syncFromServer(state);
+            });
+        }
+
+        function syncFromServer(state) {
+            if (!state) return;
+            currentState = state;
+            isActive = state.is_active;
+
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+
+            if (isActive) {
+                dot.classList.add('active');
+                text.classList.add('active');
+                text.textContent = 'Active - Accepting Votes';
+            } else if (state.options && state.options.length > 0) {
+                dot.classList.remove('active');
+                text.classList.remove('active');
+                text.textContent = 'Stopped - Results Preserved';
+            } else {
+                dot.classList.remove('active');
+                text.classList.remove('active');
+                text.textContent = 'Not Started';
+            }
+
+            document.getElementById('pollTitle').value = state.title || '';
+            document.getElementById('showTitleToggle').checked = state.show_title !== false;
+            document.getElementById('showBgToggle').checked = state.show_background !== false;
+
+            // Update options if present
+            const container = document.getElementById('optionsList');
+            if (state.options && state.options.length > 0) {
+                container.innerHTML = '';
+                state.options.forEach(opt => {
+                    addOption(opt.text, false);
+                });
+            } else if (container.children.length === 0) {
+                addOption('');
+                addOption('');
+            }
+
+            // Update buttons
+            document.getElementById('startBtn').disabled = isActive;
+            document.getElementById('stopBtn').disabled = !isActive;
+
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const title = currentState.title || 'Chat Voting';
+            const inputs = document.querySelectorAll('.option-input-field');
+            const list = document.getElementById('previewList');
+            const emptyState = document.getElementById('emptyState');
+            const titleEl = document.getElementById('previewTitle');
+            const previewBox = document.querySelector('.voting-preview-box');
+
+            if (!previewBox) return;
+
+            // Apply Styles to background
+            applyStyleToElement(previewBox, currentState.background_style);
+            renderMiniPreview('bgPreview', currentState.background_style);
+
+            if (currentState.show_background === false) {
+                previewBox.style.background = 'none';
+                previewBox.style.border = 'none';
+                previewBox.style.boxShadow = 'none';
+                previewBox.style.backdropFilter = 'none';
+            }
+
+            // Apply Styles to title
+            applyStyleToElement(titleEl, currentState.title_style, true);
+            renderMiniPreview('titlePreview', currentState.title_style);
+            titleEl.textContent = title;
+            titleEl.style.display = currentState.show_title === false ? 'none' : 'block';
+
+            // Render other mini previews
+            renderMiniPreview('optionStylePreview', currentState.option_style);
+            renderMiniPreview('barBgPreview', currentState.bar_bg_style);
+            renderMiniPreview('barFillPreview', currentState.bar_fill_style);
+            renderMiniPreview('barTextStylePreview', currentState.bar_text_style);
+
+            // Collect options
+            const opts = [];
+            inputs.forEach((inp, idx) => {
+                if (inp.value.trim()) {
+                    opts.push({ idx, text: inp.value.trim() });
+                }
+            });
+
+            // Show/hide empty state
+            if (opts.length === 0) {
+                emptyState.style.display = 'block';
+                titleEl.textContent = '';
+                list.innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            titleEl.textContent = title;
+
+            // Build preview items
+            list.innerHTML = '';
+            opts.forEach(opt => {
+                const li = document.createElement('li');
+                li.className = 'preview-item';
+                const count = currentState.vote_counts && currentState.vote_counts[opt.idx] !== undefined ? currentState.vote_counts[opt.idx] : 0;
+                const total = currentState.vote_counts ? currentState.vote_counts.reduce((a, b) => a + b, 0) : 0;
+                const percent = total > 0 ? Math.round((count / total) * 100) : 0;
+
+                li.innerHTML = `
+                    <div class="preview-label">${opt.idx}: ${opt.text}</div>
+                    <div class="preview-progress-bar">
+                        <div class="preview-progress-fill fill-${opt.idx % 10}" style="width: ${percent}%"></div>
+                        <div class="preview-percent">${percent}% (${count})</div>
+                    </div>
+                `;
+
+                // Customize preview items
+                const label = li.querySelector('.preview-label');
+                const bar = li.querySelector('.preview-progress-bar');
+                const fill = li.querySelector('.preview-progress-fill');
+                const percentText = li.querySelector('.preview-percent');
+
+                applyStyleToElement(label, currentState.option_style, true);
+                applyStyleToElement(bar, currentState.bar_bg_style);
+                applyStyleToElement(fill, currentState.bar_fill_style);
+                applyStyleToElement(percentText, currentState.bar_text_style, true);
+
+                list.appendChild(li);
+            });
+        }
+
+        function addOption(value = '', triggerUpdate = true) {
+            const container = document.getElementById('optionsList');
+            const idx = container.children.length;
+
+            const div = document.createElement('div');
+            div.className = 'option-item';
+            div.innerHTML = `
+                <div class="option-index">${idx}</div>
+                <input type="text" class="option-input-field" value="${value}" placeholder="Option ${idx}" oninput="updatePreview()">
+                <button class="remove-option-btn" onclick="removeOption(this)">×</button>
+            `;
+            container.appendChild(div);
+            if (triggerUpdate) updatePreview();
+        }
+
+        function removeOption(btn) {
+            btn.closest('.option-item').remove();
+            // Re-index
+            const container = document.getElementById('optionsList');
+            Array.from(container.children).forEach((div, i) => {
+                div.querySelector('.option-index').textContent = i;
+                div.querySelector('input').placeholder = `Option ${i}`;
+            });
+            updatePreview();
+        }
+
+        // --- Style Editor Logic ---
+        function openStyleEditor(target) {
+            editingTarget = target;
+            const titles = {
+                'title': 'Edit Title Style',
+                'background': 'Edit Background Style',
+                'option': 'Edit Option Text Style',
+                'bar_bg': 'Edit Bar Background Style',
+                'bar_fill': 'Edit Bar Fill Style',
+                'bar_text': 'Edit Percentage Text Style'
+            };
+            document.getElementById('modalTitle').textContent = titles[target] || 'Style Editor';
+
+            let styleMap = {
+                'title': currentState.title_style,
+                'background': currentState.background_style,
+                'option': currentState.option_style,
+                'bar_bg': currentState.bar_bg_style,
+                'bar_fill': currentState.bar_fill_style,
+                'bar_text': currentState.bar_text_style
+            };
+            let style = styleMap[target] || currentState.title_style;
+            currentEditorStyle = JSON.parse(JSON.stringify(style));
+
+            // Populate Fields
+            document.getElementById('styleMode').value = currentEditorStyle.type || 'solid';
+            document.getElementById('styleAngle').value = currentEditorStyle.angle || 90;
+            document.getElementById('angleValue').textContent = currentEditorStyle.angle || 90;
+            document.getElementById('styleBlur').value = currentEditorStyle.glass_blur || 0;
+            document.getElementById('blurValue').textContent = currentEditorStyle.glass_blur || 0;
+            document.getElementById('styleOpacity').value = currentEditorStyle.glass_opacity !== undefined ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('opacityValue').textContent = currentEditorStyle.glass_opacity !== undefined ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('styleShadowSize').value = currentEditorStyle.shadow_size || 0;
+            document.getElementById('shadowSizeValue').textContent = currentEditorStyle.shadow_size || 0;
+            document.getElementById('styleShadowColor').value = currentEditorStyle.shadow_color || '#000000';
+            document.getElementById('styleBorderWidth').value = currentEditorStyle.border_width || 0;
+            document.getElementById('borderWidthValue').textContent = currentEditorStyle.border_width || 0;
+            document.getElementById('styleBorderColor').value = currentEditorStyle.border_color || '#ffffff';
+
+            renderColorList();
+            updateModalUI();
+            updateStylePreview();
+
+            document.getElementById('styleModal').style.display = "block";
+        }
+
+        function closeStyleModal() {
+            document.getElementById('styleModal').style.display = "none";
+        }
+
+        function updateModalUI() {
+            const mode = document.getElementById('styleMode').value;
+            const isText = ['title', 'option', 'bar_text'].includes(editingTarget);
+            currentEditorStyle.type = mode;
+
+            document.getElementById('angleControl').style.display = (mode === 'linear') ? 'block' : 'none';
+            document.getElementById('glassControl').style.display = isText ? 'none' : 'block';
+            document.getElementById('borderControl').style.display = isText ? 'none' : 'block';
+
+            updateStylePreview();
+        }
+
+        function renderColorList() {
+            const container = document.getElementById('colorList');
+            container.innerHTML = '';
+
+            if (!currentEditorStyle.colors) currentEditorStyle.colors = ['#ffffff'];
+
+            currentEditorStyle.colors.forEach((color, index) => {
+                const div = document.createElement('div');
+                div.className = 'color-item';
+                div.innerHTML = `
+                    <input type="color" value="${color}" onchange="updateColor(${index}, this.value)">
+                    ${currentEditorStyle.colors.length > 1 ? `<span style="cursor:pointer; margin-left:5px; color:#ff6b6b;" onclick="removeColorStop(${index})">&times;</span>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addColorStop() {
+            currentEditorStyle.colors.push('#ffffff');
+            renderColorList();
+            updateStylePreview();
+        }
+
+        function removeColorStop(index) {
+            if (currentEditorStyle.colors.length > 1) {
+                currentEditorStyle.colors.splice(index, 1);
+                renderColorList();
+                updateStylePreview();
+            }
+        }
+
+        function updateColor(index, val) {
+            currentEditorStyle.colors[index] = val;
+            updateStylePreview();
+        }
+
+        function hexToRgba(hex, alpha) {
+            let c;
+            if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+                c = hex.substring(1).split('');
+                if (c.length == 3) {
+                    c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                }
+                c = '0x' + c.join('');
+                return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+            }
+            return hex;
+        }
+
+        function updateStylePreview() {
+            const mode = document.getElementById('styleMode').value;
+            currentEditorStyle.type = mode;
+            currentEditorStyle.angle = parseInt(document.getElementById('styleAngle').value);
+            document.getElementById('angleValue').textContent = currentEditorStyle.angle;
+            currentEditorStyle.glass_blur = parseInt(document.getElementById('styleBlur').value);
+            document.getElementById('blurValue').textContent = currentEditorStyle.glass_blur;
+            currentEditorStyle.glass_opacity = parseFloat(document.getElementById('styleOpacity').value);
+            document.getElementById('opacityValue').textContent = currentEditorStyle.glass_opacity;
+            currentEditorStyle.shadow_size = parseInt(document.getElementById('styleShadowSize').value);
+            document.getElementById('shadowSizeValue').textContent = currentEditorStyle.shadow_size;
+            currentEditorStyle.shadow_color = document.getElementById('styleShadowColor').value;
+            currentEditorStyle.border_width = parseInt(document.getElementById('styleBorderWidth').value);
+            document.getElementById('borderWidthValue').textContent = currentEditorStyle.border_width;
+            currentEditorStyle.border_color = document.getElementById('styleBorderColor').value;
+
+            const preview = document.getElementById('modalPreview');
+            const previewText = document.getElementById('modalPreviewText');
+            const isText = ['title', 'option', 'bar_text'].includes(editingTarget);
+
+            applyStyleToElement(preview, currentEditorStyle, isText, previewText);
+        }
+
+        function applyStyleToElement(el, style, isText = false, textEl = null) {
+            if (!style) return;
+            const alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+            const alphaColors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+            let bgString = '';
+
+            if (style.type === 'solid') {
+                bgString = alphaColors[0];
+            } else if (style.type === 'linear') {
+                let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+                bgString = `linear-gradient(${style.angle || 90}deg, ${colors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+                bgString = `radial-gradient(circle, ${colors.join(', ')})`;
+            }
+
+            if (isText) {
+                const target = textEl || el;
+                if (style.type === 'solid') {
+                    target.style.background = 'none';
+                    target.style.webkitBackgroundClip = 'unset';
+                    target.style.backgroundClip = 'unset';
+                    target.style.webkitTextFillColor = 'unset';
+                    target.style.color = alphaColors[0];
+                } else {
+                    target.style.background = bgString;
+                    target.style.webkitBackgroundClip = 'text';
+                    target.style.backgroundClip = 'text';
+                    target.style.webkitTextFillColor = 'transparent';
+                    target.style.color = 'transparent';
+                }
+                target.style.textShadow = style.shadow_size > 0 ? `0 0 ${style.shadow_size}px ${style.shadow_color}` : 'none';
+            } else {
+                el.style.background = bgString;
+                el.style.backdropFilter = style.glass_blur > 0 ? `blur(${style.glass_blur}px)` : 'none';
+                el.style.boxShadow = style.shadow_size > 0 ? `0 0 ${style.shadow_size}px ${style.shadow_color}` : 'none';
+                el.style.border = style.border_width > 0 ? `${style.border_width}px solid ${style.border_color}` : 'none';
+            }
+        }
+
+        function renderMiniPreview(elemId, style) {
+            const el = document.getElementById(elemId);
+            if (!el || !style) return;
+            const alpha = 1.0; // Mini preview always opaque for clarity
+            const colors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+
+            if (style.type === 'solid') {
+                el.style.background = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                el.style.background = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                el.style.background = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+            el.style.border = `${style.border_width > 0 ? 1 : 0}px solid var(--border-color)`;
+        }
+
+        async function applyStyleChanges() {
+            const styleMap = {
+                'title': 'title_style',
+                'background': 'background_style',
+                'option': 'option_style',
+                'bar_bg': 'bar_bg_style',
+                'bar_fill': 'bar_fill_style',
+                'bar_text': 'bar_text_style'
+            };
+
+            if (styleMap[editingTarget]) {
+                currentState[styleMap[editingTarget]] = JSON.parse(JSON.stringify(currentEditorStyle));
+            }
+
+            try {
+                const res = await fetch('/api/voting/set_styles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title_style: currentState.title_style,
+                        show_title: currentState.show_title,
+                        background_style: currentState.background_style,
+                        show_background: currentState.show_background,
+                        option_style: currentState.option_style,
+                        bar_bg_style: currentState.bar_bg_style,
+                        bar_fill_style: currentState.bar_fill_style,
+                        bar_text_style: currentState.bar_text_style
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    updatePreview();
+                    closeStyleModal();
+                }
+            } catch (e) {
+                console.error("Failed to save styles:", e);
+                alert("Error saving styles!");
+            }
+        }
+
+        async function startVoting() {
+            console.log("[VotingConfig] *** START BUTTON CLICKED ***");
+
+            const title = document.getElementById('pollTitle').value.trim() || 'Chat Voting';
+            const inputs = document.querySelectorAll('.option-input-field');
+            const opts = [];
+
+            inputs.forEach((inp, i) => {
+                if (inp.value.trim()) {
+                    opts.push({ idx: i, text: inp.value.trim() });
+                }
+            });
+
+            if (opts.length < 2) {
+                alert("Please add at least 2 options!");
+                return;
+            }
+
+            console.log("[VotingConfig] Starting vote:", { title, opts });
+
+            try {
+                console.log("[VotingConfig] Sending POST to /api/voting/start...");
+                const res = await fetch('/api/voting/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        options: opts,
+                        show_title: currentState.show_title,
+                        show_background: currentState.show_background
+                    })
+                });
+
+                console.log("[VotingConfig] Response received, status:", res.status);
+                const data = await res.json();
+                console.log("[VotingConfig] Start response data:", data);
+
+                if (data.success) {
+                    console.log("[VotingConfig] Success! Syncing from server...");
+                    syncFromServer(data.state);
+                } else {
+                    console.error("[VotingConfig] Server returned error:", data.error);
+                    alert('Error: ' + (data.error || 'Unknown'));
+                }
+            } catch (e) {
+                console.error("[VotingConfig] Fetch error:", e);
+                alert('Connection error: ' + e.message);
+            }
+        }
+
+        async function stopVoting() {
+            console.log("[VotingConfig] Stopping vote...");
+            try {
+                const res = await fetch('/api/voting/stop', { method: 'POST' });
+                const data = await res.json();
+                console.log("[VotingConfig] Stop response:", data);
+                if (data.success) {
+                    syncFromServer(data.state);
+                }
+            } catch (e) {
+                console.error("[VotingConfig] Stop error:", e);
+            }
+        }
+
+        async function resetVoting() {
+            console.log("[VotingConfig] Resetting...");
+            try {
+                const res = await fetch('/api/voting/reset', { method: 'POST' });
+                const data = await res.json();
+                console.log("[VotingConfig] Reset response:", data);
+                if (data.success) {
+                    // Clear form
+                    document.getElementById('pollTitle').value = '';
+                    document.getElementById('optionsList').innerHTML = '';
+                    addOption('');
+                    addOption('');
+                    syncFromServer(data.state);
+                }
+            } catch (e) {
+                console.error("[VotingConfig] Reset error:", e);
+            }
+        }
+
+        async function toggleVisibility(target) {
+            if (target === 'title') {
+                currentState.show_title = document.getElementById('showTitleToggle').checked;
+            } else {
+                currentState.show_background = document.getElementById('showBgToggle').checked;
+            }
+            updatePreview();
+        }
+
+        async function saveVisibilitySettings() {
+            const data = {
+                title_style: currentState.title_style,
+                show_title: currentState.show_title,
+                background_style: currentState.background_style,
+                show_background: currentState.show_background,
+                option_style: currentState.option_style,
+                bar_bg_style: currentState.bar_bg_style,
+                bar_fill_style: currentState.bar_fill_style,
+                bar_text_style: currentState.bar_text_style
+            };
+
+            try {
+                const res = await fetch('/api/voting/set_styles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert("Settings saved!");
+                }
+            } catch (e) {
+                console.error("Failed to save settings:", e);
+                alert("Failed to save settings.");
+            }
+        }
+
+        function copyUrl() {
+            navigator.clipboard.writeText('http://localhost:5149/widget/voting').then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+
+    <!-- Style Editor Modal -->
+    <div id="styleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Style Editor</h2>
+                <span class="close-modal" onclick="closeStyleModal()"
+                    style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+
+            <div id="modalPreview">
+                <span id="modalPreviewText" style="font-size: 24px; font-weight: bold;">PREVIEW TEXT</span>
+            </div>
+
+            <div class="form-group">
+                <label>Fill Type</label>
+                <select id="styleMode" onchange="updateModalUI()"
+                    style="width: 100%; padding: 10px; border-radius: 6px; background: var(--input-bg); color: var(--text-primary); border: 1px solid var(--border-color);">
+                    <option value="solid">Solid Color</option>
+                    <option value="linear">Linear Gradient</option>
+                    <option value="radial">Radial Gradient</option>
+                </select>
+            </div>
+
+            <div id="angleControl" class="form-group" style="display: none;">
+                <label>Gradient Angle: <span id="angleValue">90</span>°</label>
+                <input type="range" id="styleAngle" min="0" max="360" value="90" style="width: 100%;"
+                    oninput="updateStylePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>Colors</label>
+                <div id="colorList" class="color-list"></div>
+                <button class="add-option-btn" onclick="addColorStop()"
+                    style="padding: 5px; font-size: 0.9em; border-style: solid; margin-top: 10px;">+ Add Color
+                    Stop</button>
+            </div>
+
+            <div id="glassControl">
+                <div class="form-group">
+                    <label>Glass Blur: <span id="blurValue">0</span>px</label>
+                    <input type="range" id="styleBlur" min="0" max="20" value="0" style="width: 100%;"
+                        oninput="updateStylePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Overall Opacity: <span id="opacityValue">1.0</span></label>
+                    <input type="range" id="styleOpacity" min="0" max="1" step="0.05" value="1" style="width: 100%;"
+                        oninput="updateStylePreview()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Shadow Size: <span id="shadowSizeValue">0</span>px</label>
+                <input type="range" id="styleShadowSize" min="0" max="30" value="0" style="width: 100%;"
+                    oninput="updateStylePreview()">
+            </div>
+            <div class="form-group">
+                <label>Shadow Color</label>
+                <input type="color" id="styleShadowColor" value="#000000" onchange="updateStylePreview()">
+            </div>
+
+            <div id="borderControl">
+                <div class="form-group">
+                    <label>Border Width: <span id="borderWidthValue">0</span>px</label>
+                    <input type="range" id="styleBorderWidth" min="0" max="10" value="0" style="width: 100%;"
+                        oninput="updateStylePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Border Color</label>
+                    <input type="color" id="styleBorderColor" value="#ffffff" onchange="updateStylePreview()">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-stop"
+                    style="background-color: var(--bg-primary); color: var(--text-secondary); border: 1px solid var(--border-color);"
+                    onclick="closeStyleModal()">Cancel</button>
+                <button class="btn btn-start" onclick="applyStyleChanges()">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

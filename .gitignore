@@ -1,0 +1,56 @@
+# --- Local secrets & credentials ---
+.env
+.secret.key
+creditial.txt
+creditials.txt
+
+# --- Temporary / Debug Files ---
+# These files seem to be logs or debug outputs from various components
+bilibili_api.txt
+blcsdk.txt
+chat.txt
+kokoro.txt
+pluginsample.txt
+*.txt.bak
+*.log
+
+# --- Personal & Environment-specific ---
+PERSONAL.md
+dark_modern.jsonc
+legacy_backup/
+potential_asset/
+theme/
+blivechat.wiki/
+
+
+# --- Local Application Data & logs ---
+data/*.json
+data/.secret.key
+data/accessed_file.txt
+log/accessed_file.txt
+log/messages/
+# Keep templates/placeholders
+!data/.env.example
+!log/.gitkeep
+
+# --- Python & Caching ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Virtual Environments ---
+venv/
+.venv/
+env/
+
+# --- IDEs ---
+.vscode/
+.idea/
+
+# --- Build & Distribution (PyInstaller) ---
+build/
+dist/
+dist_staging/
+# Note: biliutility.spec is kept as it contains custom build logic
+

@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Progress Configuration</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        h1,
+        h2 {
+            color: var(--green);
+            /* Solarized Cyan or Green */
+        }
+
+        .section {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .levels-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .levels-table th,
+        .levels-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .levels-table th {
+            color: var(--red);
+            /* Accent for header */
+        }
+
+        .image-preview {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            background-color: #000;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--green);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            background-color: var(--red);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background-color: var(--base01);
+            color: #fff;
+        }
+
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        #saveStatus {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status-success {
+            background-color: rgba(133, 153, 0, 0.2);
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+
+        .status-error {
+            background-color: rgba(220, 50, 47, 0.2);
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .style-preview-box {
+            width: 100px;
+            height: 40px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow-y: auto;
+            padding: 40px 0;
+        }
+
+        .modal-content {
+            background-color: var(--bg-tertiary);
+            margin: 0 auto;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px var(--shadow-color);
+            position: relative;
+        }
+
+        .close-modal {
+            color: var(--text-secondary);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+
+        .style-option-row {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .color-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            background: var(--bg-secondary);
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Member Progress Configuration</h1>
+
+        <div class="section">
+            <h2>General Settings</h2>
+            <div class="form-group">
+                <label for="titleText">Widget Title Text</label>
+                <input type="text" id="titleText" placeholder="e.g. 6月冲舰">
+            </div>
+            <div class="form-group" style="display: flex; gap: 20px; align-items: center;">
+                <div>
+                    <label>Title Style</label>
+                    <div id="titlePreview" class="style-preview-box"></div>
+                    <button class="btn btn-secondary" onclick="openStyleEditor('title')">Customize</button>
+                </div>
+                <div>
+                    <label for="showTitle" style="cursor: pointer;">
+                        <input type="checkbox" id="showTitle" checked> Show Title
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" style="display: flex; gap: 20px; align-items: center;">
+                <div>
+                    <label>Background Style</label>
+                    <div id="bgPreview" class="style-preview-box"></div>
+                    <button class="btn btn-secondary" onclick="openStyleEditor('background')">Customize</button>
+                </div>
+                <div>
+                    <label for="showBg" style="cursor: pointer;">
+                        <input type="checkbox" id="showBg" checked> Show Background
+                    </label>
+                </div>
+            </div>
+
+            <!-- New: Number Colors and Image Size Settings -->
+            <div class="form-group"
+                style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                <div>
+                    <label for="countColor">Count Number Color (on bar)</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="color" id="countColor" value="#ffffff" style="width: 50px; height: 30px;">
+                        <input type="range" id="countOpacity" min="0" max="1" step="0.1" value="1" style="width: 50px;"
+                            title="Opacity">
+                    </div>
+                </div>
+                <div>
+                    <label for="labelColor">Min/Max Label Color</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="color" id="labelColor" value="#ffffff" style="width: 50px; height: 30px;">
+                        <input type="range" id="labelOpacity" min="0" max="1" step="0.1" value="1" style="width: 50px;"
+                            title="Opacity">
+                    </div>
+                </div>
+                <div>
+                    <label for="imageSize">Reward Icon Size: <span id="imageSizeValue">80</span>px</label>
+                    <input type="range" id="imageSize" min="40" max="150" value="80" style="width: 150px;"
+                        oninput="document.getElementById('imageSizeValue').textContent = this.value">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Progress Levels</h2>
+            <p style="color: #999; font-size: 0.9em; margin-bottom: 15px;">
+                Define the progress bar segments. The "Max" value of one level should match the "Min" value of the next.
+                The last level should have a very high Max value (e.g., 999999) to cover everything beyond.
+            </p>
+
+            <table class="levels-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th style="width: 80px;">Min</th>
+                        <th style="width: 80px;">Max</th>
+                        <th style="width: 60px;">Start Color</th>
+                        <th style="width: 60px;">End Color</th>
+                        <th>Image</th>
+                        <th style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="levelsBody">
+                    <!-- Levels generated by JS -->
+                </tbody>
+            </table>
+
+            <button class="btn btn-secondary" id="addLevelBtn">+ Add Level</button>
+        </div>
+
+        <div
+            style="position: sticky; bottom: 20px; background: var(--bg-primary); padding: 10px 0; border-top: 1px solid var(--border-color);">
+            <button class="btn btn-primary" id="saveBtn" style="width: 100%;">Save All Changes</button>
+            <div id="saveStatus"></div>
+        </div>
+    </div>
+
+    <!-- Style Editor Modal -->
+    <div id="styleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeStyleModal()">&times;</span>
+            <h2 id="modalTitle">Edit Style</h2>
+
+            <div class="style-option-row">
+                <label>Mode</label>
+                <select id="styleMode" onchange="updateModalUI()"
+                    style="width: 100%; padding: 8px; background: #333; color: white; border: 1px solid #444;">
+                    <option value="solid">Solid Color</option>
+                    <option value="linear">Linear Gradient</option>
+                    <option value="radial">Radial Gradient</option>
+                </select>
+            </div>
+
+            <div class="style-option-row">
+                <label>Colors <button class="btn btn-secondary"
+                        style="padding: 2px 6px; font-size: 0.8em; float: right;" onclick="addColorStop()">+ Add
+                        Color</button></label>
+                <div id="colorList" class="color-list"></div>
+            </div>
+
+            <div class="style-option-row" id="angleControl">
+                <label>Gradient Angle: <span id="angleValue">90</span>deg</label>
+                <input type="range" id="styleAngle" min="0" max="360" value="90" style="width: 100%"
+                    oninput="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row" id="glassControl">
+                <label>Glass Blur: <span id="blurValue">0</span>px</label>
+                <input type="range" id="styleBlur" min="0" max="50" value="0" style="width: 100%"
+                    oninput="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row">
+                <label>Opacity/Transparency: <span id="opacityValue">1.0</span></label>
+                <input type="range" id="styleOpacity" min="0" max="1" step="0.1" value="1.0" style="width: 100%"
+                    oninput="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row">
+                <label>Shadow Size: <span id="shadowSizeValue">0</span>px</label>
+                <input type="range" id="styleShadowSize" min="0" max="50" value="0" style="width: 100%"
+                    oninput="updateStylePreview()">
+                <label style="margin-top: 5px;">Shadow Color</label>
+                <input type="color" id="styleShadowColor" value="#000000" style="width: 50px;"
+                    onchange="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row" id="borderControl">
+                <label>Border Width: <span id="borderWidthValue">0</span>px</label>
+                <input type="range" id="styleBorderWidth" min="0" max="20" value="0" style="width: 100%"
+                    oninput="updateStylePreview()">
+                <label style="margin-top: 5px;">Border Color</label>
+                <input type="color" id="styleBorderColor" value="#ffffff" style="width: 50px;"
+                    onchange="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row">
+                <label>Preview</label>
+                <div id="modalPreview"
+                    style="height: 100px; width: 100%; border-radius: 8px; margin-top: 10px; border: 1px dashed #666; display: flex; align-items: center; justify-content: center;">
+                    <span id="modalPreviewText"
+                        style="font-size: 28px; font-weight: bold; text-shadow: 0 0 10px rgba(0,0,0,0.5);">测试文本</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="applyStyleChanges()">Apply</button>
+        </div>
+    </div>
+
+    <script>
+        let currentConfig = {
+            title_text: '',
+            title_style: {
+                type: "solid",
+                colors: ["#E8D57C"],
+                angle: 90,
+                glass_blur: 0,
+                glass_opacity: 1.0,
+                shadow_color: "#000000",
+                shadow_size: 0,
+                border_color: "#ffffff",
+                border_width: 0
+            },
+            show_title: true,
+            background_style: {
+                type: "solid",
+                colors: ["#5A4F77"],
+                angle: 135,
+                glass_blur: 0,
+                glass_opacity: 1.0,
+                shadow_color: "#000000",
+                shadow_size: 0,
+                border_color: "rgba(255, 215, 0, 0)",
+                border_width: 0
+            },
+            show_background: true,
+            levels: []
+        };
+
+        let editingTarget = null; // 'title' or 'background'
+        let currentEditorStyle = {};
+
+        // Default Style Objects (in case of missing data)
+        const DEFAULT_STYLE = {
+            type: "solid",
+            colors: ["#E8D57C"],
+            angle: 90,
+            glass_blur: 0,
+            glass_opacity: 1.0,
+            shadow_color: "#000000",
+            shadow_size: 0,
+            border_color: "#ffffff",
+            border_width: 0
+        };
+
+        const DEFAULT_BG_STYLE = {
+            type: "solid",
+            colors: ["#5A4F77"],
+            angle: 135,
+            glass_blur: 0,
+            glass_opacity: 1.0,
+            shadow_color: "#000000",
+            shadow_size: 0,
+            border_color: "rgba(255, 215, 0, 0)",
+            border_width: 0
+        };
+
+        // DOM Element References
+        const titleInput = document.getElementById('titleText');
+        const showTitleInput = document.getElementById('showTitle');
+        const showBgInput = document.getElementById('showBg');
+        const countColorInput = document.getElementById('countColor');
+        const labelColorInput = document.getElementById('labelColor');
+        const imageSizeInput = document.getElementById('imageSize');
+        const levelsBody = document.getElementById('levelsBody');
+        const saveStatus = document.getElementById('saveStatus');
+        const modal = document.getElementById('styleModal');
+
+        function openStyleEditor(target) {
+            editingTarget = target;
+            const title = target === 'title' ? 'Edit Title Style' : 'Edit Background Style';
+            document.getElementById('modalTitle').textContent = title;
+
+            // Clone style logic
+            let style = target === 'title' ? currentConfig.title_style : currentConfig.background_style;
+            if (!style || !style.type) {
+                style = target === 'title' ? JSON.parse(JSON.stringify(DEFAULT_STYLE)) : JSON.parse(JSON.stringify(DEFAULT_BG_STYLE));
+            }
+            currentEditorStyle = JSON.parse(JSON.stringify(style));
+
+            // Populate Fields
+            document.getElementById('styleMode').value = currentEditorStyle.type || 'solid';
+            document.getElementById('styleAngle').value = currentEditorStyle.angle || 90;
+            document.getElementById('angleValue').textContent = currentEditorStyle.angle || 90;
+            document.getElementById('styleBlur').value = currentEditorStyle.glass_blur || 0;
+            document.getElementById('blurValue').textContent = currentEditorStyle.glass_blur || 0;
+            document.getElementById('styleOpacity').value = currentEditorStyle.glass_opacity !== undefined ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('opacityValue').textContent = currentEditorStyle.glass_opacity !== undefined ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('styleShadowSize').value = currentEditorStyle.shadow_size || 0;
+            document.getElementById('shadowSizeValue').textContent = currentEditorStyle.shadow_size || 0;
+            document.getElementById('styleShadowColor').value = currentEditorStyle.shadow_color || '#000000';
+            document.getElementById('styleBorderWidth').value = currentEditorStyle.border_width || 0;
+            document.getElementById('borderWidthValue').textContent = currentEditorStyle.border_width || 0;
+            document.getElementById('styleBorderColor').value = currentEditorStyle.border_color || '#ffffff';
+
+            renderColorList();
+            updateModalUI();
+            updateStylePreview();
+
+            modal.style.display = "block";
+        }
+
+        function closeStyleModal() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                closeStyleModal();
+            }
+        }
+
+        function updateModalUI() {
+            const mode = document.getElementById('styleMode').value;
+            const isTitle = editingTarget === 'title';
+            currentEditorStyle.type = mode;
+
+            // Show/Hide Angle (only for linear gradient)
+            document.getElementById('angleControl').style.display = (mode === 'linear') ? 'block' : 'none';
+
+            // Hide glass blur and border controls for title (text) editing
+            // since these CSS properties don't apply to inline text
+            document.getElementById('glassControl').style.display = isTitle ? 'none' : 'block';
+            document.getElementById('borderControl').style.display = isTitle ? 'none' : 'block';
+
+            updateStylePreview();
+        }
+
+        function renderColorList() {
+            const container = document.getElementById('colorList');
+            container.innerHTML = '';
+
+            if (!currentEditorStyle.colors) currentEditorStyle.colors = ['#ffffff'];
+
+            currentEditorStyle.colors.forEach((color, index) => {
+                const div = document.createElement('div');
+                div.className = 'color-item';
+                div.innerHTML = `
+                    <input type="color" value="${color}" onchange="updateColor(${index}, this.value)">
+                    ${currentEditorStyle.colors.length > 1 ? `<span style="cursor:pointer; margin-left:5px; color:#ff6b6b;" onclick="removeColorStop(${index})">&times;</span>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addColorStop() {
+            currentEditorStyle.colors.push('#ffffff');
+            renderColorList();
+            updateStylePreview();
+        }
+
+        function removeColorStop(index) {
+            if (currentEditorStyle.colors.length > 1) {
+                currentEditorStyle.colors.splice(index, 1);
+                renderColorList();
+                updateStylePreview();
+            }
+        }
+
+        function updateColor(index, val) {
+            currentEditorStyle.colors[index] = val;
+            updateStylePreview();
+        }
+
+        function getCSSFromStyle(style) {
+            let css = '';
+
+            // Background
+            if (style.type === 'solid') {
+                css += `background: ${style.colors[0]};`;
+            } else if (style.type === 'linear') {
+                let colors = style.colors.length === 1 ? [style.colors[0], style.colors[0]] : style.colors;
+                css += `background: linear-gradient(${style.angle}deg, ${colors.join(', ')});`;
+            } else if (style.type === 'radial') {
+                let colors = style.colors.length === 1 ? [style.colors[0], style.colors[0]] : style.colors;
+                css += `background: radial-gradient(circle, ${colors.join(', ')});`;
+            }
+
+            // Glass (Backdrop Filter)
+            if (style.glass_blur > 0) {
+                // For glass, we often want rgba for background if using solid. 
+                // If utilizing opacity slider, we can enforce it here by hex->rgba or just opacity prop?
+                // Simple approach: apply opacity to container
+                css += `backdrop-filter: blur(${style.glass_blur}px); -webkit-backdrop-filter: blur(${style.glass_blur}px);`;
+            }
+            if (style.glass_opacity < 1.0) {
+                // If opacity is set, we might need to apply it to the background color itself or opacity property
+                // But generally users might want the box transparent.
+                // Let's assume opacity applies to the whole background layer?
+                // Or better: Let user pick alpha in color picker? (HTML color input doesn't always support alpha well)
+                // Let's map global opacity:
+                // Actually easier: background-color: rgba(...) is best.
+                // But for gradients, we need rgba in stops.
+                // Simpler: element opacity? No that affects text.
+                // Hack: If glass, reduce alpha of colors?
+                // Let's just output `opacity: ${style.glass_opacity}` but that fades text too.
+                // Correct way: use rgba values. Converting hex to rgba.
+                // BUT implementation step called for opacity slider.
+                // Let's skip complex hex conversion for now and just set `opacity` on preview to demo, 
+                // but for REAL widget usage, we need a wrapper or RGBA conversion.
+                // Let's implement HexToRGBA helper for the CSS generation.
+            }
+
+            // Shadows
+            if (style.shadow_size > 0) {
+                css += `box-shadow: 0 0 ${style.shadow_size}px ${style.shadow_color};`;
+            }
+
+            // Border
+            if (style.border_width > 0) {
+                css += `border: ${style.border_width}px solid ${style.border_color};`;
+            }
+
+            return css;
+        }
+
+        function hexToRgba(hex, alpha) {
+            let c;
+            if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+                c = hex.substring(1).split('');
+                if (c.length == 3) {
+                    c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                }
+                c = '0x' + c.join('');
+                return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+            }
+            return hex; // Fallback
+        }
+
+        function updateStylePreview() {
+            // Update state object from inputs
+            currentEditorStyle.angle = parseInt(document.getElementById('styleAngle').value);
+            document.getElementById('angleValue').textContent = currentEditorStyle.angle;
+
+            currentEditorStyle.glass_blur = parseInt(document.getElementById('styleBlur').value);
+            document.getElementById('blurValue').textContent = currentEditorStyle.glass_blur;
+
+            currentEditorStyle.glass_opacity = parseFloat(document.getElementById('styleOpacity').value);
+            document.getElementById('opacityValue').textContent = currentEditorStyle.glass_opacity;
+
+            currentEditorStyle.shadow_size = parseInt(document.getElementById('styleShadowSize').value);
+            document.getElementById('shadowSizeValue').textContent = currentEditorStyle.shadow_size;
+            currentEditorStyle.shadow_color = document.getElementById('styleShadowColor').value;
+
+            currentEditorStyle.border_width = parseInt(document.getElementById('styleBorderWidth').value);
+            document.getElementById('borderWidthValue').textContent = currentEditorStyle.border_width;
+            currentEditorStyle.border_color = document.getElementById('styleBorderColor').value;
+
+            // Generate CSS
+            // We need to smart-handle opacity for Glass effect if we want text to remain opaque
+            // We will modify the COLORS in the CSS string to include alpha
+            let css = '';
+            let alpha = currentEditorStyle.glass_opacity;
+            let bgString = '';
+
+            let alphaColors = currentEditorStyle.colors.map(c => hexToRgba(c, alpha));
+
+            if (currentEditorStyle.type === 'solid') {
+                bgString = alphaColors[0];
+            } else if (currentEditorStyle.type === 'linear') {
+                let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+                bgString = `linear-gradient(${currentEditorStyle.angle}deg, ${colors.join(', ')})`;
+            } else if (currentEditorStyle.type === 'radial') {
+                let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+                bgString = `radial-gradient(circle, ${colors.join(', ')})`;
+            }
+
+            const preview = document.getElementById('modalPreview');
+            const previewText = document.getElementById('modalPreviewText');
+
+            if (editingTarget === 'title') {
+                // For title: apply style to TEXT
+                preview.style.background = '#2a2a2a'; // Dark background to see text
+                preview.style.backdropFilter = 'none';
+                preview.style.boxShadow = 'none';
+                preview.style.border = '1px dashed #666';
+
+                previewText.style.display = 'inline-block';
+
+                if (currentEditorStyle.type === 'solid') {
+                    // Solid color: just apply color to text
+                    previewText.style.background = 'none';
+                    previewText.style.webkitBackgroundClip = 'unset';
+                    previewText.style.backgroundClip = 'unset';
+                    previewText.style.webkitTextFillColor = 'unset';
+                    previewText.style.color = alphaColors[0];
+                } else {
+                    // Gradient: apply to text using background-clip trick
+                    previewText.style.background = bgString;
+                    previewText.style.webkitBackgroundClip = 'text';
+                    previewText.style.backgroundClip = 'text';
+                    previewText.style.webkitTextFillColor = 'transparent';
+                    previewText.style.color = 'transparent';
+                }
+                previewText.style.textShadow = currentEditorStyle.shadow_size > 0 ? `0 0 ${currentEditorStyle.shadow_size}px ${currentEditorStyle.shadow_color}` : 'none';
+            } else {
+                // For background: apply to the box
+                previewText.style.display = 'none';
+                preview.style.background = bgString;
+                preview.style.backdropFilter = `blur(${currentEditorStyle.glass_blur}px)`;
+                preview.style.boxShadow = `0 0 ${currentEditorStyle.shadow_size}px ${currentEditorStyle.shadow_color}`;
+                preview.style.border = `${currentEditorStyle.border_width}px solid ${currentEditorStyle.border_color}`;
+            }
+        }
+
+        function applyStyleChanges() {
+            if (editingTarget === 'title') {
+                currentConfig.title_style = JSON.parse(JSON.stringify(currentEditorStyle));
+            } else {
+                currentConfig.background_style = JSON.parse(JSON.stringify(currentEditorStyle));
+            }
+            renderConfig();
+            closeStyleModal();
+
+            // Show confirmation
+            alert('Style applied! Remember to click "Save All Changes" to persist your changes.');
+        }
+
+        function renderConfig() {
+            titleInput.value = currentConfig.title_text;
+            showTitleInput.checked = currentConfig.show_title !== false;
+            showBgInput.checked = currentConfig.show_background !== false;
+
+            // Render PREVIEWS on main page
+            renderMiniPreview('titlePreview', currentConfig.title_style || DEFAULT_STYLE);
+            renderMiniPreview('bgPreview', currentConfig.background_style || DEFAULT_BG_STYLE);
+
+            renderLevels();
+        }
+
+        function renderMiniPreview(elemId, style) {
+            const el = document.getElementById(elemId);
+            if (!style) return;
+
+            let alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+
+            if (style.type === 'solid') {
+                el.style.background = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                el.style.background = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                el.style.background = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+            el.style.border = `${style.border_width || 0}px solid ${style.border_color || 'transparent'}`;
+        }
+
+
+        function renderLevels() {
+            levelsBody.innerHTML = '';
+
+            currentConfig.levels.forEach((level, index) => {
+                const tr = document.createElement('tr');
+
+                const startData = rgbaToHexAndOpacity(level.start_color || '#4ecdc4');
+                const endData = rgbaToHexAndOpacity(level.end_color || '#4ecdc4');
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><input type="number" class="min-input" value="${level.min}" onchange="updateLevel(${index}, 'min', this.value)"></td>
+                    <td><input type="number" class="max-input" value="${level.max}" onchange="updateLevel(${index}, 'max', this.value)"></td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <div id="start-preview-${index}" style="height: 15px; border-radius: 3px; border: 1px solid #444; background: ${level.start_color || '#4ecdc4'}"></div>
+                            <input type="color" id="start-color-${index}" value="${startData.hex}" style="width: 100%" onchange="updateLevelColor(${index}, 'start_color')">
+                            <input type="range" id="start-opacity-${index}" min="0" max="1" step="0.1" value="${startData.opacity}" onchange="updateLevelColor(${index}, 'start_color')">
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <div id="end-preview-${index}" style="height: 15px; border-radius: 3px; border: 1px solid #444; background: ${level.end_color || '#4ecdc4'}"></div>
+                            <input type="color" id="end-color-${index}" value="${endData.hex}" style="width: 100%" onchange="updateLevelColor(${index}, 'end_color')">
+                            <input type="range" id="end-opacity-${index}" min="0" max="1" step="0.1" value="${endData.opacity}" onchange="updateLevelColor(${index}, 'end_color')">
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="/static/${level.image}" class="image-preview" id="img-${index}">
+                            <div class="upload-btn-wrapper">
+                                <button class="btn btn-secondary" style="font-size: 0.8em;">Upload</button>
+                                <input type="file" onchange="uploadImage(${index}, this.files[0])" accept="image/*">
+                            </div>
+                            ${level.is_custom ? `<button class="btn btn-secondary" onclick="resetImage(${index})" style="font-size: 0.8em; padding: 4px 8px;">Reset</button>` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" onclick="removeLevel(${index})">Remove</button>
+                    </td>
+                `;
+                levelsBody.appendChild(tr);
+            });
+        }
+
+        function updateLevel(index, field, value) {
+            if (field === 'min' || field === 'max') {
+                const numValue = parseInt(value) || 0;
+                currentConfig.levels[index][field] = numValue;
+
+                // Enforce continuity: If Max is updated, update Min of next level
+                if (field === 'max' && index < currentConfig.levels.length - 1) {
+                    currentConfig.levels[index + 1].min = numValue;
+                }
+
+                // If Min is updated, update Max of previous level
+                if (field === 'min' && index > 0) {
+                    currentConfig.levels[index - 1].max = numValue;
+                }
+
+                renderLevels(); // Re-render to show updated values in adjacent fields
+            } else {
+                currentConfig.levels[index][field] = value;
+            }
+        }
+
+        document.getElementById('addLevelBtn').addEventListener('click', () => {
+            // Logic to guess next range based on last level
+            const lastLevel = currentConfig.levels[currentConfig.levels.length - 1];
+            let newMin = 0, newMax = 100;
+
+            if (lastLevel) {
+                newMin = lastLevel.max;
+                newMax = newMin + 100;
+            }
+
+            currentConfig.levels.push({
+                min: newMin,
+                max: newMax,
+                image: 'placeholder.png',
+                is_custom: false,
+                start_color: '#4ecdc4',
+                end_color: '#4ecdc4'
+            });
+            renderLevels();
+        });
+
+        function removeLevel(index) {
+            // Adjust continuity when removing a level
+            if (index > 0 && index < currentConfig.levels.length - 1) {
+                // If removing a middle level, extend the previous level's max to the removed level's max
+                // OR extend the next level's min?
+                // Logic: Connect Previous.Max to Next.Min. 
+                // Let's set Next.Min = Previous.Max to maintain the gap closing
+                const prevLevel = currentConfig.levels[index - 1];
+                const nextLevel = currentConfig.levels[index + 1];
+                nextLevel.min = prevLevel.max;
+            } else if (index === 0 && currentConfig.levels.length > 1) {
+                // If removing first level, set next level min to 0 (optional, but good for progress bars)
+                currentConfig.levels[index + 1].min = 0;
+            }
+
+            currentConfig.levels.splice(index, 1);
+            renderLevels();
+        }
+
+        async function uploadImage(index, file) {
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('index', index);
+
+            try {
+                const response = await fetch('/api/members_progress/upload_image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentConfig.levels[index].image = result.filename;
+                    currentConfig.levels[index].is_custom = true;
+                    renderLevels(); // Re-render to show updated image and reset button
+                    showStatus('Image uploaded successfully', 'success');
+                } else {
+                    showStatus('Upload failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Upload error: ' + error.message, 'error');
+            }
+        }
+
+        async function resetImage(index) {
+            try {
+                const response = await fetch('/api/members_progress/reset_image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index: index })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentConfig.levels[index].image = result.filename;
+                    currentConfig.levels[index].is_custom = false;
+                    renderLevels();
+                    showStatus('Image reset to default', 'success');
+                } else {
+                    showStatus('Reset failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Reset error: ' + error.message, 'error');
+            }
+        }
+
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            console.log('[DEBUG] ===== SAVE BUTTON CLICKED =====');
+            currentConfig.title_text = titleInput.value;
+            currentConfig.show_title = showTitleInput.checked;
+            currentConfig.show_background = showBgInput.checked;
+            // New fields
+            currentConfig.count_color = hexToRgba(countColorInput.value, document.getElementById('countOpacity').value);
+            currentConfig.label_color = hexToRgba(labelColorInput.value, document.getElementById('labelOpacity').value);
+            currentConfig.image_size = parseInt(imageSizeInput.value);
+            // styles are already updated in currentConfig by applyStyleChanges
+
+            console.log('[DEBUG] Payload to send:', JSON.stringify(currentConfig, null, 2));
+
+            try {
+                console.log('[DEBUG] Sending POST to /api/members_progress/config...');
+                const response = await fetch('/api/members_progress/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+                console.log('[DEBUG] Response status:', response.status);
+                const result = await response.json();
+                console.log('[DEBUG] Response body:', JSON.stringify(result, null, 2));
+
+                if (result.success) {
+                    console.log('[DEBUG] Save successful! Widget should update via socket.');
+                    showStatus('Configuration saved successfully!', 'success');
+                } else {
+                    console.error('[DEBUG] Save failed:', result.error);
+                    showStatus('Save failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('[DEBUG] Save error:', error);
+                showStatus('Save error: ' + error.message, 'error');
+            }
+            console.log('[DEBUG] ===== SAVE COMPLETE =====');
+        });
+
+        function showStatus(message, type) {
+            saveStatus.textContent = message;
+            saveStatus.className = 'status-' + type;
+            saveStatus.style.display = 'block';
+            setTimeout(() => {
+                saveStatus.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initial config setup from server injection
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+
+        // Initialize page on load
+        async function initPage() {
+            console.log('[DEBUG] Initializing page...');
+
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('[DEBUG] Using server-injected config');
+                currentConfig = {
+                    title_text: initialConfig.title_text || '',
+                    title_style: initialConfig.title_style || JSON.parse(JSON.stringify(DEFAULT_STYLE)),
+                    show_title: initialConfig.show_title !== false,
+                    background_style: initialConfig.background_style || JSON.parse(JSON.stringify(DEFAULT_BG_STYLE)),
+                    show_background: initialConfig.show_background !== false,
+                    count_color: initialConfig.count_color || '#ffffff',
+                    label_color: initialConfig.label_color || '#ffffff',
+                    image_size: initialConfig.image_size || 80,
+                    levels: initialConfig.levels || []
+                };
+
+                // Populate new input fields
+                const countData = rgbaToHexAndOpacity(currentConfig.count_color || '#ffffff');
+                countColorInput.value = countData.hex;
+                document.getElementById('countOpacity').value = countData.opacity;
+
+                const labelData = rgbaToHexAndOpacity(currentConfig.label_color || '#ffffff');
+                labelColorInput.value = labelData.hex;
+                document.getElementById('labelOpacity').value = labelData.opacity;
+                imageSizeInput.value = currentConfig.image_size;
+                document.getElementById('imageSizeValue').textContent = currentConfig.image_size;
+
+                renderConfig();
+                renderLevels();
+                console.log('[DEBUG] Page initialized from injected config');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/members_progress/config');
+                const data = await response.json();
+                console.log('[DEBUG] Loaded config via API:', data);
+
+                if (data.success && data.config) {
+                    // Merge loaded config with defaults to ensure all fields exist
+                    currentConfig = {
+                        title_text: data.config.title_text || '',
+                        title_style: data.config.title_style || JSON.parse(JSON.stringify(DEFAULT_STYLE)),
+                        show_title: data.config.show_title !== false,
+                        background_style: data.config.background_style || JSON.parse(JSON.stringify(DEFAULT_BG_STYLE)),
+                        show_background: data.config.show_background !== false,
+                        count_color: data.config.count_color || '#ffffff',
+                        label_color: data.config.label_color || '#ffffff',
+                        image_size: data.config.image_size || 80,
+                        levels: data.config.levels || []
+                    };
+
+                    // Populate new input fields
+                    const countData = rgbaToHexAndOpacity(currentConfig.count_color || '#ffffff');
+                    countColorInput.value = countData.hex;
+                    document.getElementById('countOpacity').value = countData.opacity;
+
+                    const labelData = rgbaToHexAndOpacity(currentConfig.label_color || '#ffffff');
+                    labelColorInput.value = labelData.hex;
+                    document.getElementById('labelOpacity').value = labelData.opacity;
+                    imageSizeInput.value = currentConfig.image_size;
+                    document.getElementById('imageSizeValue').textContent = currentConfig.image_size;
+                }
+
+                renderConfig();
+                renderLevels();
+                console.log('[DEBUG] Page initialized via API');
+            } catch (error) {
+                console.error('[DEBUG] Error loading config:', error);
+                // Use defaults
+                renderConfig();
+                renderLevels();
+            }
+        }
+
+        // Helper to convert rgba to hex (for color inputs that only support hex)
+        function rgbaToHex(color) {
+            if (!color) return '#ffffff';
+            if (color.startsWith('#')) return color.substring(0, 7); // Already hex
+            // If rgba, extract RGB and convert
+            const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (match) {
+                const r = parseInt(match[1]).toString(16).padStart(2, '0');
+                const g = parseInt(match[2]).toString(16).padStart(2, '0');
+                const b = parseInt(match[3]).toString(16).padStart(2, '0');
+                return `#${r}${g}${b}`;
+            }
+            return '#ffffff';
+        }
+
+        function rgbaToHexAndOpacity(rgba) {
+            if (!rgba || !rgba.startsWith('rgba')) return { hex: rgba || '#000000', opacity: 1.0 };
+            const parts = rgba.match(/[\d.]+/g);
+            if (!parts || parts.length < 4) return { hex: '#000000', opacity: 1.0 };
+
+            const r = parseInt(parts[0]).toString(16).padStart(2, '0');
+            const g = parseInt(parts[1]).toString(16).padStart(2, '0');
+            const b = parseInt(parts[2]).toString(16).padStart(2, '0');
+            const a = parseFloat(parts[3]);
+            return { hex: `#${r}${g}${b}`, opacity: a };
+        }
+
+        function updateLevelColor(index, field) {
+            // Determine input IDs based on field
+            // field is 'start_color' or 'end_color'
+            const prefix = field === 'start_color' ? 'start' : 'end';
+            const hexInput = document.getElementById(`${prefix}-color-${index}`);
+            const opacityInput = document.getElementById(`${prefix}-opacity-${index}`);
+
+            if (hexInput && opacityInput) {
+                const rgba = hexToRgba(hexInput.value, opacityInput.value);
+                currentConfig.levels[index][field] = rgba;
+
+                // Update preview div
+                const previewDiv = document.getElementById(`${prefix}-preview-${index}`);
+                if (previewDiv) {
+                    previewDiv.style.background = rgba;
+                }
+
+                console.log(`Updated ${field} for level ${index} to ${rgba}`);
+            }
+        }
+
+        // Run init on page load
+        initPage();
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+</html>

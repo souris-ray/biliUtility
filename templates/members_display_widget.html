@@ -1,0 +1,543 @@
+<!-- templates/members_display_widget.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Display Widget</title>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/terminus-ttf');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            font-family: 'Terminus (TTF)', 'Terminus', 'Menlo', 'Monaco', 'Consolas', monospace;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .member-container {
+            text-align: center;
+            position: relative;
+            width: 80%;
+            max-width: 600px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s ease-in-out;
+        }
+
+        .member-container.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .member-container.fade-out {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .rank-gif {
+            width: 60%;
+            max-width: 300px;
+            height: auto;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .member-info {
+            background: linear-gradient(135deg, rgba(90, 79, 119, 0.9) 0%, rgba(156, 108, 140, 0.9) 100%);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .member-info::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                    transparent 30%,
+                    rgba(255, 255, 255, 0.1) 50%,
+                    transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        .member-name {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .member-rank {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .thank-you {
+            font-size: 20px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rise 4s ease-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        @keyframes rise {
+            0% {
+                opacity: 0;
+                transform: translateY(100px) scale(0);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(80px) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0.5);
+            }
+        }
+
+        /* Queue indicator */
+        .queue-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .queue-indicator.visible {
+            opacity: 1;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="member-container" id="memberContainer">
+        <img id="rankGif" class="rank-gif" src="" alt="Rank Animation">
+        <div class="member-info">
+            <div class="particles" id="particles"></div>
+            <div class="member-name" id="memberName">Loading...</div>
+            <div class="member-rank" id="memberRank">Loading...</div>
+            <div class="thank-you" id="thankYouText">感谢您加入舰队！</div>
+        </div>
+    </div>
+
+    <div class="queue-indicator" id="queueIndicator">
+        队列中: <span id="queueSize">0</span>
+    </div>
+
+    <div id="connectionStatus"
+        style="position: fixed; bottom: 10px; left: 10px; font-size: 10px; color: rgba(255,255,255,0.3); font-family: monospace;">
+        Socket: Disconnected
+    </div>
+
+    <script>
+        const socket = io();
+        const container = document.getElementById('memberContainer');
+        const memberName = document.getElementById('memberName');
+        const memberRank = document.getElementById('memberRank');
+        const rankGif = document.getElementById('rankGif');
+        const queueIndicator = document.getElementById('queueIndicator');
+        const queueSize = document.getElementById('queueSize');
+        const particles = document.getElementById('particles');
+        const connStatus = document.getElementById('connectionStatus');
+        const thankYouEl = document.getElementById('thankYouText');
+
+        const initialConfig = JSON.parse('{{ config | tojson | safe }}');
+
+        let displayTimeout = null;
+        let isDisplaying = false;
+        let currentMemberData = null;
+
+        // Configuration State
+        let gifMap = {};
+        let perTierStyles = {}; // { captain: {...}, ... }
+        let globalConfig = {
+            show_member_info: true,
+            thank_you_text: '感谢您加入舰队！'
+        };
+
+        // Rank mapping
+        const rankClassMap = {
+            '舰长': 'captain',
+            '提督': 'admiral',
+            '总督': 'governor'
+        };
+
+        // Helper: Convert hex to rgba
+        function hexToRgba(hex, alpha = 1.0) {
+            if (!hex) return 'rgba(255,255,255,1)';
+            if (hex.startsWith('rgba') || hex.startsWith('rgb')) return hex;
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // Apply complex style object to element
+        function applyStyleToElement(el, style, isText) {
+            if (!el || !style) return;
+
+            // Normalize alpha for colors if needed (or assume colors are complete)
+            // For now, we assume style.colors contains valid CSS color strings (hex or rgba)
+            // But if glass_opacity is separate, we might need to apply it?
+            // In the config page, we bake opacity into the color or use a separate property.
+            // Let's stick to the config page's logic:
+            // The config page generates `rgba` for background colors based on opacity.
+            // But here, we receive the raw data including `colors` array.
+
+            // Helper to get color string (simple pass-through or basic hex->rgba if we were doing that)
+            // For now, just use colors as-is, assuming backend/config saves them ready-to-use
+            let colors = style.colors || ['#ffffff'];
+            let bgString = '';
+
+            if (style.type === 'solid') {
+                bgString = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+
+            if (isText) {
+                // Text Styling
+                if (style.type === 'solid') {
+                    el.style.backgroundImage = 'none';
+                    el.style.color = colors[0];
+                    el.style.webkitBackgroundClip = 'initial';
+                    el.style.webkitTextFillColor = 'initial';
+                } else {
+                    el.style.backgroundImage = bgString;
+                    el.style.color = 'transparent';
+                    el.style.webkitBackgroundClip = 'text';
+                    el.style.webkitTextFillColor = 'transparent';
+                }
+
+                // Shadow
+                if (style.shadow_size > 0) {
+                    el.style.textShadow = `0 0 ${style.shadow_size}px ${style.shadow_color || '#000000'}`;
+                } else {
+                    el.style.textShadow = 'none';
+                }
+
+                // Reset Box Props
+                el.style.boxShadow = 'none';
+                el.style.border = 'none';
+                el.style.backdropFilter = 'none';
+
+            } else {
+                // Box Styling
+                el.style.background = bgString;
+
+                // Glass / Blur
+                if (style.glass_blur > 0) {
+                    el.style.backdropFilter = `blur(${style.glass_blur}px)`;
+                } else {
+                    el.style.backdropFilter = 'none';
+                }
+
+                // Shadow
+                if (style.shadow_size > 0) {
+                    el.style.boxShadow = `0 0 ${style.shadow_size}px ${style.shadow_color || '#000000'}`;
+                } else {
+                    el.style.boxShadow = 'none';
+                }
+
+                // Border
+                if (style.border_width > 0) {
+                    el.style.border = `${style.border_width}px solid ${style.border_color || '#ffffff'}`;
+                } else {
+                    el.style.border = 'none';
+                }
+
+                // Opacity is handled via RGBA in colors usually, but if we have a global opacity override:
+                // if (style.glass_opacity < 1) el.style.opacity = style.glass_opacity; 
+                // (Careful, this affects child text too!)
+            }
+        }
+
+        function updateConfigState(data) {
+            console.log('[DEBUG] Updating config state:', data);
+            // data matches get_config() in app.py: { styles: {...}, show_member_info: bool, thank_you_text: str, gifs: {...}, ... }
+            perTierStyles = data.styles || perTierStyles;
+            globalConfig.show_member_info = (data.show_member_info !== undefined) ? data.show_member_info : globalConfig.show_member_info;
+            globalConfig.thank_you_text = data.thank_you_text || globalConfig.thank_you_text || '感谢您加入舰队！';
+
+            if (data.gifs) {
+                gifMap = {
+                    '舰长': data.gifs['captain'].url,
+                    '提督': data.gifs['admiral'].url,
+                    '总督': data.gifs['governor'].url
+                };
+            }
+
+            // Update DOM static elements
+            if (thankYouEl) {
+                thankYouEl.textContent = globalConfig.thank_you_text;
+            }
+
+            // Live update currently visible member
+            if (isDisplaying && currentMemberData) {
+                console.log('[DEBUG] Live updating currently displayed member styles');
+                applyStylesToMember(currentMemberData);
+            } else {
+                // Just toggle visibility if nothing is active
+                const memberInfo = document.querySelector('.member-info');
+                if (memberInfo) {
+                    memberInfo.style.display = globalConfig.show_member_info ? 'block' : 'none';
+                }
+            }
+        }
+
+        // Apply all styles to the member UI based on data and current config
+        function applyStylesToMember(data) {
+            const rankClass = rankClassMap[data.guard_type] || 'captain';
+            const tierStyles = perTierStyles[rankClass] || perTierStyles['captain'] || {};
+            const memberInfo = document.querySelector('.member-info');
+
+            if (globalConfig.show_member_info === false) {
+                memberInfo.style.display = 'none';
+            } else {
+                memberInfo.style.display = 'block';
+                if (tierStyles.bg_style) applyStyleToElement(memberInfo, tierStyles.bg_style, false);
+            }
+
+            if (tierStyles.name_style) applyStyleToElement(memberName, tierStyles.name_style, true);
+            if (tierStyles.rank_style) applyStyleToElement(memberRank, tierStyles.rank_style, true);
+
+            memberName.className = `member-name ${rankClass}`;
+            memberRank.className = `member-rank ${rankClass}`;
+
+            const gifSrc = gifMap[data.guard_type] || gifMap['舰长'];
+            if (rankGif.src.indexOf(gifSrc) === -1) {
+                rankGif.src = gifSrc + '?t=' + Date.now();
+            }
+        }
+
+        // Data Loading
+        async function loadGifConfig() {
+            if (initialConfig && initialConfig.gifs) {
+                console.log('Using server-injected GIF config');
+                gifMap = {
+                    '舰长': initialConfig.gifs.captain.url,
+                    '提督': initialConfig.gifs.admiral.url,
+                    '总督': initialConfig.gifs.governor.url
+                };
+                return;
+            }
+            try {
+                const response = await fetch('/api/members/get_gifs');
+                const data = await response.json();
+                if (data.success) {
+                    gifMap = {
+                        '舰长': data.gifs.captain.url,
+                        '提督': data.gifs.admiral.url,
+                        '总督': data.gifs.governor.url
+                    };
+                }
+            } catch (error) { console.error('GIF config error', error); }
+        }
+
+        async function loadThankYouText() {
+            if (initialConfig && initialConfig.thank_you_text) {
+                console.log('Using server-injected thank you text');
+                document.getElementById('thankYouText').textContent = initialConfig.thank_you_text;
+                return;
+            }
+            try {
+                const response = await fetch('/api/members/get_thank_you_text');
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('thankYouText').textContent = data.text;
+                }
+            } catch (error) { console.error('Thank you text error', error); }
+        }
+
+        async function loadStyles() {
+            if (initialConfig && initialConfig.styles) {
+                console.log('Using server-injected styles');
+                updateConfigState(initialConfig);
+                return;
+            }
+            try {
+                const response = await fetch('/api/members/get_styles');
+                const data = await response.json();
+                if (data.success) {
+                    updateConfigState(data);
+                }
+            } catch (error) { console.error('Style load error', error); }
+        }
+
+
+        // Create particles
+        function createParticles() {
+            particles.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 10 + 5 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.animationDuration = 4 + Math.random() * 2 + 's';
+                particles.appendChild(particle);
+            }
+        }
+
+        // Display member
+        function displayMember(data) {
+            console.log('[DEBUG] Displaying member:', data);
+            if (isDisplaying) {
+                console.log('[DEBUG] Already displaying, skipping');
+                return;
+            }
+
+            isDisplaying = true;
+            currentMemberData = data;
+
+            // Set member info
+            memberName.textContent = data.username || 'Unknown';
+            memberRank.textContent = data.guard_type || '舰长';
+
+            // Apply Styles
+            applyStylesToMember(data);
+
+            // Create particles
+            createParticles();
+
+            // Fade in
+            container.classList.add('active');
+
+            // Schedule fade out
+            displayTimeout = setTimeout(() => {
+                container.classList.add('fade-out');
+
+                setTimeout(() => {
+                    container.classList.remove('active', 'fade-out');
+                    isDisplaying = false;
+                    currentMemberData = null;
+                    socket.emit('member:get_next');
+                }, 500);
+            }, 5000);
+        }
+
+        // Socket event handlers
+        socket.on('connect', async () => {
+            console.log('Connected to server');
+            connStatus.textContent = 'Socket: Connected';
+            connStatus.style.color = 'rgba(0, 255, 0, 0.5)';
+            await loadGifConfig();
+            await loadThankYouText();
+            await loadStyles();
+            socket.emit('member:get_next');
+            socket.emit('member:queue_status');
+        });
+
+        socket.on('disconnect', () => {
+            connStatus.textContent = 'Socket: Disconnected';
+            connStatus.style.color = 'rgba(255, 0, 0, 0.5)';
+        });
+
+        socket.on('member:display', (data) => displayMember(data));
+
+        socket.on('member:queue_empty', () => {
+            setTimeout(() => {
+                if (!isDisplaying) socket.emit('member:get_next');
+            }, 2000);
+        });
+
+        socket.on('member:new', (data) => {
+            socket.emit('member:queue_status');
+            if (!isDisplaying) socket.emit('member:get_next');
+        });
+
+        socket.on('members:config_updated', (data) => {
+            console.log('[DEBUG] Member display config update received:', data);
+            updateConfigState(data);
+        });
+
+        socket.on('member:queue_size', (data) => {
+            queueSize.textContent = data.size;
+            if (data.size > 0) queueIndicator.classList.add('visible');
+            else queueIndicator.classList.remove('visible');
+        });
+
+        // Auto-check
+        setInterval(() => {
+            if (!isDisplaying) socket.emit('member:get_next');
+        }, 5000);
+    </script>
+</body>
+
+</html>

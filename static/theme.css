@@ -1,0 +1,122 @@
+@import url('https://fonts.cdnfonts.com/css/terminus-ttf');
+
+/* Solarized Color Palette */
+:root {
+    /* Base Colors */
+    --base03: #002b36;
+    --base02: #073642;
+    --base01: #586e75;
+    --base00: #657b83;
+    --base0: #839496;
+    --base1: #93a1a1;
+    --base2: #eee8d5;
+    --base3: #fdf6e3;
+    --yellow: #b58900;
+    --orange: #cb4b16;
+    --red: #dc322f;
+    --magenta: #d33682;
+    --violet: #6c71c4;
+    --blue: #268bd2;
+    --cyan: #2aa198;
+    --green: #859900;
+
+    /* Font Stack */
+    --font-main: 'Terminus (TTF)', 'Terminus', 'Menlo', 'Monaco', 'Consolas', monospace;
+
+    /* Default Theme (Dark) - Mapped to Semantic Names */
+    --bg-primary: var(--base03);
+    --bg-secondary: var(--base02);
+    --bg-tertiary: var(--base02);
+    /* Panels/Cards */
+
+    --text-primary: var(--base0);
+    --text-secondary: var(--base01);
+    --text-accent: var(--blue);
+
+    --border-color: var(--base02);
+
+    --input-bg: rgba(0, 0, 0, 0.2);
+    --input-border: var(--base01);
+
+    --success: var(--green);
+    --warning: var(--yellow);
+    --danger: var(--red);
+    --info: var(--blue);
+
+    --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+/* Light Theme Overrides */
+[data-theme="light"] {
+    --bg-primary: var(--base3);
+    --bg-secondary: var(--base2);
+    --bg-tertiary: var(--base2);
+
+    --text-primary: var(--base00);
+    --text-secondary: var(--base1);
+    --text-accent: var(--blue);
+
+    --border-color: var(--base1);
+    /* Slightly darker for distinct borders in light mode */
+
+    --input-bg: rgba(255, 255, 255, 0.5);
+    --input-border: var(--base1);
+
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Utility Classes */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.panel,
+.section,
+.card {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+
+a {
+    color: var(--text-accent);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-primary);
+}
+
+/* Or use specific accents if desired */
+
+/* Theme Toggle Button Style */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 1.2em;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--bg-primary);
+}

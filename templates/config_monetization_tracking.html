@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monetization Tracking Configuration</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            background: none;
+            color: var(--yellow);
+            -webkit-text-fill-color: initial;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .section h2 {
+            font-size: 1.2em;
+            color: var(--yellow);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"] {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--text-primary);
+            font-size: 1em;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+        }
+
+        .inline-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .inline-group>div {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .style-preview-box {
+            width: 60px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 8px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--yellow);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Preview section */
+        .preview-widget {
+            background: var(--bg-tertiary);
+            /* Override needed? Or keep gradient for preview context? Let's check logic. */
+            /* Actually the preview widget style depends on the user config, but the container should be neutral */
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* ... existing preview styles are dynamically set by JS mostly ... */
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .preview-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--yellow);
+        }
+
+        .preview-count {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--yellow);
+        }
+
+        .preview-progress-container {
+            width: 100%;
+            height: 16px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .preview-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--yellow) 0%, var(--orange) 100%);
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .preview-text {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow-y: auto;
+            padding: 40px 0;
+        }
+
+        .modal-content {
+            background-color: var(--bg-tertiary);
+            margin: 0 auto;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px var(--shadow-color);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            color: var(--text-accent);
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+
+        .style-option-row {
+            margin-bottom: 15px;
+        }
+
+        .style-option-row label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .style-option-row select,
+        .style-option-row input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+
+        .color-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-item input[type="color"] {
+            width: 40px;
+            height: 30px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .color-item button {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        #modalPreview {
+            height: 80px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modalPreviewText {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .save-bar {
+            position: sticky;
+            bottom: 20px;
+            background: var(--bg-primary);
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .save-bar button {
+            width: 100%;
+        }
+
+        #saveStatus {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .status-success {
+            color: var(--green);
+        }
+
+        .status-error {
+            color: var(--red);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .back-link:hover {
+            color: var(--text-accent);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 6px 14px;
+            font-size: 0.85em;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .preset-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .preset-btn.active {
+            background: var(--yellow);
+            color: var(--bg-primary);
+            border-color: var(--yellow);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Monetization Tracking Configuration</h1>
+            <p>Configure the monetization tracking widget appearance</p>
+        </div>
+
+        <!-- Milestone Settings -->
+        <div class="section">
+            <h2>Milestone Settings</h2>
+            <div class="form-group">
+                <label for="milestoneGoal">Milestone Goal (yuan)</label>
+                <input type="number" id="milestoneGoal" min="1" max="100000" step="1" value="500">
+                <div class="preset-buttons">
+                    <button type="button" class="preset-btn" data-value="100">100</button>
+                    <button type="button" class="preset-btn" data-value="200">200</button>
+                    <button type="button" class="preset-btn" data-value="500">500</button>
+                    <button type="button" class="preset-btn" data-value="1000">1000</button>
+                    <button type="button" class="preset-btn" data-value="2000">2000</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div class="section">
+            <h2>Appearance Settings</h2>
+
+            <!-- Title -->
+            <div class="form-group">
+                <label for="titleText">Title Text</label>
+                <input type="text" id="titleText" placeholder="e.g. 惩罚轮盘进度">
+            </div>
+
+            <div class="inline-group">
+                <div>
+                    <label>Title Style</label>
+                    <div id="titlePreview" class="style-preview-box"></div>
+                    <button class="btn btn-secondary" onclick="openStyleEditor('title')">Customize</button>
+                </div>
+                <div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showTitle" checked> Show Title
+                    </label>
+                </div>
+            </div>
+
+            <!-- Background -->
+            <div class="inline-group" style="margin-top: 20px;">
+                <div>
+                    <label>Background Style</label>
+                    <div id="bgPreview" class="style-preview-box"></div>
+                    <button class="btn btn-secondary" onclick="openStyleEditor('background')">Customize</button>
+                </div>
+                <div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showBg" checked> Show Background
+                    </label>
+                </div>
+            </div>
+
+            <!-- Progress Bar Colors -->
+            <div class="inline-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #444;">
+                <div>
+                    <label for="progressBarStart">Progress Bar Start</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="color" id="progressBarStart" value="#E8D57C" style="width: 50px; height: 35px;">
+                        <input type="range" id="progressStartOpacity" min="0" max="1" step="0.1" value="1"
+                            style="width: 50px;" title="Opacity" oninput="updateLivePreview()">
+                    </div>
+                </div>
+                <div>
+                    <label for="progressBarEnd">Progress Bar End</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="color" id="progressBarEnd" value="#C87041" style="width: 50px; height: 35px;">
+                        <input type="range" id="progressEndOpacity" min="0" max="1" step="0.1" value="1"
+                            style="width: 50px;" title="Opacity" oninput="updateLivePreview()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Number Colors -->
+            <div class="inline-group" style="margin-top: 20px;">
+                <div>
+                    <label for="countColor">Count Color (×N)</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="color" id="countColor" value="#E8D57C" style="width: 50px; height: 35px;">
+                        <input type="range" id="countOpacity" min="0" max="1" step="0.1" value="1" style="width: 50px;"
+                            title="Opacity" oninput="updateLivePreview()">
+                    </div>
+                </div>
+                <div>
+                    <label for="labelColor">Label Color (300/500)</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="color" id="labelColor" value="#ffffff" style="width: 50px; height: 35px;">
+                        <input type="range" id="labelOpacity" min="0" max="1" step="0.1" value="1" style="width: 50px;"
+                            title="Opacity" oninput="updateLivePreview()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="section">
+            <h2>Live Preview</h2>
+            <div class="preview-widget" id="previewWidget">
+                <div class="preview-header">
+                    <span class="preview-label" id="previewTitle">惩罚轮盘进度</span>
+                    <span class="preview-count" id="previewCountNum">×3</span>
+                </div>
+                <div class="preview-progress-container">
+                    <div class="preview-progress-bar" id="previewBar"></div>
+                </div>
+                <div class="preview-text" id="previewLabelText">500 / 500</div>
+            </div>
+        </div>
+
+        <!-- Save -->
+        <div class="save-bar">
+            <button class="btn btn-primary" id="saveBtn">Save All Changes</button>
+            <div id="saveStatus"></div>
+        </div>
+
+        <a href="/" class="back-link">&larr; Back to Dashboard</a>
+    </div>
+
+    <!-- Style Editor Modal -->
+    <div id="styleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeStyleModal()">&times;</span>
+            <h2 id="modalTitle">Edit Style</h2>
+
+            <div class="style-option-row">
+                <label>Mode</label>
+                <select id="styleMode" onchange="updateModalUI(); updateStylePreview();">
+                    <option value="solid">Solid Color</option>
+                    <option value="linear">Linear Gradient</option>
+                    <option value="radial">Radial Gradient</option>
+                </select>
+            </div>
+
+            <div class="style-option-row">
+                <label>Colors <button class="btn btn-secondary"
+                        style="padding: 4px 10px; font-size: 0.8em; float: right;" onclick="addColor()">+ Add
+                        Color</button></label>
+                <div class="color-list" id="colorList"></div>
+            </div>
+
+            <div class="style-option-row" id="angleRow">
+                <label>Angle: <span id="angleValue">90</span>°</label>
+                <input type="range" id="styleAngle" min="0" max="360" value="90" oninput="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row" id="blurRow">
+                <label>Glass Blur: <span id="blurValue">0</span>px</label>
+                <input type="range" id="styleBlur" min="0" max="20" value="0" oninput="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row">
+                <label>Opacity: <span id="opacityValue">1</span></label>
+                <input type="range" id="styleOpacity" min="0" max="1" step="0.1" value="1"
+                    oninput="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row">
+                <label>Shadow Size: <span id="shadowSizeValue">0</span>px</label>
+                <input type="range" id="styleShadowSize" min="0" max="30" value="0" oninput="updateStylePreview()">
+                <label style="margin-top: 5px;">Shadow Color</label>
+                <input type="color" id="styleShadowColor" value="#000000" style="width: 50px;"
+                    onchange="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row" id="borderRow">
+                <label>Border Width: <span id="borderWidthValue">0</span>px</label>
+                <input type="range" id="styleBorderWidth" min="0" max="10" value="0" oninput="updateStylePreview()">
+                <label style="margin-top: 5px;">Border Color</label>
+                <input type="color" id="styleBorderColor" value="#ffffff" style="width: 50px;"
+                    onchange="updateStylePreview()">
+            </div>
+
+            <div class="style-option-row">
+                <label>Preview</label>
+                <div id="modalPreview" style="border: 1px dashed #666;">
+                    <span id="modalPreviewText">测试文本</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="applyStyleChanges()">Apply</button>
+        </div>
+    </div>
+
+    <script>
+        // Current config state
+        let currentConfig = {
+            milestone_goal: 500,
+            title_text: '惩罚轮盘进度',
+            title_style: { type: 'solid', colors: ['#E8D57C'], angle: 90, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: '#ffffff', border_width: 0 },
+            show_title: true,
+            background_style: { type: 'linear', colors: ['#9C6C8C', '#5A4F77'], angle: 135, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: 'rgba(255, 215, 0, 0)', border_width: 0 },
+            show_background: true,
+            count_color: '#E8D57C',
+            label_color: 'rgba(255, 255, 255, 0.8)',
+            progress_bar_start_color: '#E8D57C',
+            progress_bar_end_color: '#C87041'
+        };
+
+        const DEFAULT_TITLE_STYLE = { type: 'solid', colors: ['#E8D57C'], angle: 90, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: '#ffffff', border_width: 0 };
+        const DEFAULT_BG_STYLE = { type: 'linear', colors: ['#9C6C8C', '#5A4F77'], angle: 135, glass_blur: 0, glass_opacity: 1.0, shadow_color: '#000000', shadow_size: 0, border_color: 'rgba(255, 215, 0, 0)', border_width: 0 };
+
+        let editingTarget = null;
+        let currentEditorStyle = {};
+
+        // DOM References
+        const milestoneGoalInput = document.getElementById('milestoneGoal');
+        const titleTextInput = document.getElementById('titleText');
+        const showTitleInput = document.getElementById('showTitle');
+        const showBgInput = document.getElementById('showBg');
+        const progressBarStartInput = document.getElementById('progressBarStart');
+        const progressBarEndInput = document.getElementById('progressBarEnd');
+        const countColorInput = document.getElementById('countColor');
+        const labelColorInput = document.getElementById('labelColor');
+        const modal = document.getElementById('styleModal');
+
+        // Helper: hex to rgba
+        function hexToRgba(hex, alpha = 1.0) {
+            if (!hex) return 'rgba(255,255,255,1)';
+            if (hex.startsWith('rgba') || hex.startsWith('rgb')) return hex;
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // Helper: rgba to hex
+        function rgbaToHex(color) {
+            if (!color) return '#ffffff';
+            if (color.startsWith('#')) return color.substring(0, 7);
+            const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (match) {
+                return '#' + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+            }
+            return '#ffffff';
+        }
+
+        // Initial config setup
+        // Initial config setup from server injection
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+
+        // Load config from injected data or fallback to defaults
+        async function loadConfig() {
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('Using server-injected config');
+                currentConfig = { ...currentConfig, ...initialConfig };
+
+                // Populate UI
+                milestoneGoalInput.value = currentConfig.milestone_goal;
+                titleTextInput.value = currentConfig.title_text;
+                showTitleInput.checked = currentConfig.show_title;
+                showBgInput.checked = currentConfig.show_background;
+
+                const startData = rgbaToHexAndOpacity(currentConfig.progress_bar_start_color);
+                progressBarStartInput.value = startData.hex;
+                document.getElementById('progressStartOpacity').value = startData.opacity;
+
+                const endData = rgbaToHexAndOpacity(currentConfig.progress_bar_end_color);
+                progressBarEndInput.value = endData.hex;
+                document.getElementById('progressEndOpacity').value = endData.opacity;
+
+                const countData = rgbaToHexAndOpacity(currentConfig.count_color);
+                countColorInput.value = countData.hex;
+                document.getElementById('countOpacity').value = countData.opacity;
+
+                const labelData = rgbaToHexAndOpacity(currentConfig.label_color);
+                labelColorInput.value = labelData.hex;
+                document.getElementById('labelOpacity').value = labelData.opacity;
+
+                updatePresetButtons();
+                renderMiniPreviews();
+                updateLivePreview();
+                return;
+            }
+
+            // Fallback to API if injection failed
+            try {
+                const response = await fetch('/api/gifts/get_config');
+                const data = await response.json();
+
+                currentConfig = {
+                    milestone_goal: data.milestone_goal || 500,
+                    title_text: data.title_text || '惩罚轮盘进度',
+                    title_style: data.title_style || JSON.parse(JSON.stringify(DEFAULT_TITLE_STYLE)),
+                    show_title: data.show_title !== false,
+                    background_style: data.background_style || JSON.parse(JSON.stringify(DEFAULT_BG_STYLE)),
+                    show_background: data.show_background !== false,
+                    count_color: data.count_color || '#E8D57C',
+                    label_color: data.label_color || 'rgba(255, 255, 255, 0.8)',
+                    progress_bar_start_color: data.progress_bar_start_color || '#E8D57C',
+                    progress_bar_end_color: data.progress_bar_end_color || '#C87041'
+                };
+
+                // Populate UI
+                milestoneGoalInput.value = currentConfig.milestone_goal;
+                titleTextInput.value = currentConfig.title_text;
+                showTitleInput.checked = currentConfig.show_title;
+                showBgInput.checked = currentConfig.show_background;
+                const startData = rgbaToHexAndOpacity(currentConfig.progress_bar_start_color);
+                progressBarStartInput.value = startData.hex;
+                document.getElementById('progressStartOpacity').value = startData.opacity;
+
+                const endData = rgbaToHexAndOpacity(currentConfig.progress_bar_end_color);
+                progressBarEndInput.value = endData.hex;
+                document.getElementById('progressEndOpacity').value = endData.opacity;
+
+                const countData = rgbaToHexAndOpacity(currentConfig.count_color);
+                countColorInput.value = countData.hex;
+                document.getElementById('countOpacity').value = countData.opacity;
+
+                const labelData = rgbaToHexAndOpacity(currentConfig.label_color);
+                labelColorInput.value = labelData.hex;
+                document.getElementById('labelOpacity').value = labelData.opacity;
+
+                updatePresetButtons();
+                renderMiniPreviews();
+                updateLivePreview();
+            } catch (error) {
+                console.error('Failed to load config:', error);
+            }
+        }
+
+        // Render mini previews on main page
+        function renderMiniPreviews() {
+            renderMiniPreview('titlePreview', currentConfig.title_style || DEFAULT_TITLE_STYLE);
+            renderMiniPreview('bgPreview', currentConfig.background_style || DEFAULT_BG_STYLE);
+        }
+
+        function renderMiniPreview(elemId, style) {
+            const el = document.getElementById(elemId);
+            if (!style || !el) return;
+
+            let alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+
+            if (style.type === 'solid') {
+                el.style.background = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                el.style.background = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                el.style.background = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+            el.style.border = `${style.border_width || 0}px solid ${style.border_color || 'transparent'}`;
+        }
+
+        // Update live preview widget
+        function updateLivePreview() {
+            const widget = document.getElementById('previewWidget');
+            const title = document.getElementById('previewTitle');
+            const countNum = document.getElementById('previewCountNum');
+            const bar = document.getElementById('previewBar');
+            const labelText = document.getElementById('previewLabelText');
+
+            // Background
+            if (!showBgInput.checked) {
+                widget.style.background = 'transparent';
+                widget.style.boxShadow = 'none';
+            } else {
+                applyStyleToPreview(widget, currentConfig.background_style, false);
+            }
+
+            // Title
+            title.textContent = titleTextInput.value || '惩罚轮盘进度';
+            if (!showTitleInput.checked) {
+                title.style.display = 'none';
+            } else {
+                title.style.display = '';
+                applyStyleToPreview(title, currentConfig.title_style, true);
+            }
+
+            // Count color
+            countNum.style.color = hexToRgba(countColorInput.value, document.getElementById('countOpacity').value);
+
+            // Progress bar
+            const startColor = hexToRgba(progressBarStartInput.value, document.getElementById('progressStartOpacity').value);
+            const endColor = hexToRgba(progressBarEndInput.value, document.getElementById('progressEndOpacity').value);
+            bar.style.background = `linear-gradient(90deg, ${startColor} 0%, ${endColor} 100%)`;
+
+            // Label color
+            labelText.style.color = hexToRgba(labelColorInput.value, document.getElementById('labelOpacity').value);
+        }
+
+        function applyStyleToPreview(el, style, isText) {
+            if (!el || !style) return;
+            let alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+            let bgString = '';
+
+            if (style.type === 'solid') {
+                bgString = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+
+            if (isText) {
+                if (style.type === 'solid') {
+                    el.style.background = 'none';
+                    el.style.webkitBackgroundClip = 'unset';
+                    el.style.color = colors[0];
+                } else {
+                    el.style.background = bgString;
+                    el.style.webkitBackgroundClip = 'text';
+                    el.style.webkitTextFillColor = 'transparent';
+                }
+            } else {
+                el.style.background = bgString;
+                if (style.shadow_size > 0) {
+                    el.style.boxShadow = `0 0 ${style.shadow_size}px ${style.shadow_color}`;
+                }
+            }
+        }
+
+        // Preset buttons
+        function updatePresetButtons() {
+            const currentValue = parseInt(milestoneGoalInput.value);
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.value) === currentValue);
+            });
+        }
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                milestoneGoalInput.value = this.dataset.value;
+                updatePresetButtons();
+            });
+        });
+
+        milestoneGoalInput.addEventListener('input', updatePresetButtons);
+
+        // Input change listeners for live preview
+        [titleTextInput, showTitleInput, showBgInput, progressBarStartInput, progressBarEndInput, countColorInput, labelColorInput].forEach(el => {
+            el.addEventListener('input', updateLivePreview);
+            el.addEventListener('change', updateLivePreview);
+        });
+
+        // Style Editor Modal
+        function openStyleEditor(target) {
+            editingTarget = target;
+            document.getElementById('modalTitle').textContent = target === 'title' ? 'Edit Title Style' : 'Edit Background Style';
+
+            let style = target === 'title' ? currentConfig.title_style : currentConfig.background_style;
+            if (!style || !style.type) {
+                style = target === 'title' ? JSON.parse(JSON.stringify(DEFAULT_TITLE_STYLE)) : JSON.parse(JSON.stringify(DEFAULT_BG_STYLE));
+            }
+            currentEditorStyle = JSON.parse(JSON.stringify(style));
+
+            // Populate fields
+            document.getElementById('styleMode').value = currentEditorStyle.type || 'solid';
+            document.getElementById('styleAngle').value = currentEditorStyle.angle || 90;
+            document.getElementById('angleValue').textContent = currentEditorStyle.angle || 90;
+            document.getElementById('styleBlur').value = currentEditorStyle.glass_blur || 0;
+            document.getElementById('blurValue').textContent = currentEditorStyle.glass_blur || 0;
+            document.getElementById('styleOpacity').value = currentEditorStyle.glass_opacity !== undefined ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('opacityValue').textContent = currentEditorStyle.glass_opacity !== undefined ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('styleShadowSize').value = currentEditorStyle.shadow_size || 0;
+            document.getElementById('shadowSizeValue').textContent = currentEditorStyle.shadow_size || 0;
+            document.getElementById('styleShadowColor').value = currentEditorStyle.shadow_color || '#000000';
+            document.getElementById('styleBorderWidth').value = currentEditorStyle.border_width || 0;
+            document.getElementById('borderWidthValue').textContent = currentEditorStyle.border_width || 0;
+            document.getElementById('styleBorderColor').value = rgbaToHex(currentEditorStyle.border_color) || '#ffffff';
+
+            renderColorList();
+            updateModalUI();
+            updateStylePreview();
+
+            modal.style.display = 'block';
+        }
+
+        function closeStyleModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            if (event.target === modal) closeStyleModal();
+        };
+
+        function updateModalUI() {
+            const mode = document.getElementById('styleMode').value;
+            const isTitle = editingTarget === 'title';
+
+            // Angle only applies to linear gradient
+            document.getElementById('angleRow').style.display = mode === 'linear' ? 'block' : 'none';
+
+            // Border and glass blur don't apply to text (title)
+            document.getElementById('borderRow').style.display = isTitle ? 'none' : 'block';
+            document.getElementById('blurRow').style.display = isTitle ? 'none' : 'block';
+        }
+
+        function renderColorList() {
+            const container = document.getElementById('colorList');
+            container.innerHTML = '';
+            currentEditorStyle.colors = currentEditorStyle.colors || ['#ffffff'];
+            currentEditorStyle.colors.forEach((color, index) => {
+                const div = document.createElement('div');
+                div.className = 'color-item';
+                div.innerHTML = `
+                    <input type="color" value="${rgbaToHex(color)}" onchange="updateColor(${index}, this.value)">
+                    ${currentEditorStyle.colors.length > 1 ? `<button onclick="removeColor(${index})">×</button>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addColor() {
+            currentEditorStyle.colors.push('#ffffff');
+            renderColorList();
+            updateStylePreview();
+        }
+
+        function removeColor(index) {
+            currentEditorStyle.colors.splice(index, 1);
+            renderColorList();
+            updateStylePreview();
+        }
+
+        function updateColor(index, value) {
+            currentEditorStyle.colors[index] = value;
+            updateStylePreview();
+        }
+
+        function updateStylePreview() {
+            currentEditorStyle.type = document.getElementById('styleMode').value;
+            currentEditorStyle.angle = parseInt(document.getElementById('styleAngle').value);
+            document.getElementById('angleValue').textContent = currentEditorStyle.angle;
+            currentEditorStyle.glass_blur = parseInt(document.getElementById('styleBlur').value);
+            document.getElementById('blurValue').textContent = currentEditorStyle.glass_blur;
+            currentEditorStyle.glass_opacity = parseFloat(document.getElementById('styleOpacity').value);
+            document.getElementById('opacityValue').textContent = currentEditorStyle.glass_opacity;
+            currentEditorStyle.shadow_size = parseInt(document.getElementById('styleShadowSize').value);
+            document.getElementById('shadowSizeValue').textContent = currentEditorStyle.shadow_size;
+            currentEditorStyle.shadow_color = document.getElementById('styleShadowColor').value;
+            currentEditorStyle.border_width = parseInt(document.getElementById('styleBorderWidth').value);
+            document.getElementById('borderWidthValue').textContent = currentEditorStyle.border_width;
+            currentEditorStyle.border_color = document.getElementById('styleBorderColor').value;
+
+            // Generate preview
+            let alpha = currentEditorStyle.glass_opacity;
+            let alphaColors = currentEditorStyle.colors.map(c => hexToRgba(c, alpha));
+            let bgString = '';
+
+            if (currentEditorStyle.type === 'solid') {
+                bgString = alphaColors[0];
+            } else if (currentEditorStyle.type === 'linear') {
+                let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+                bgString = `linear-gradient(${currentEditorStyle.angle}deg, ${colors.join(', ')})`;
+            } else if (currentEditorStyle.type === 'radial') {
+                let colors = alphaColors.length === 1 ? [alphaColors[0], alphaColors[0]] : alphaColors;
+                bgString = `radial-gradient(circle, ${colors.join(', ')})`;
+            }
+
+            const preview = document.getElementById('modalPreview');
+            const previewText = document.getElementById('modalPreviewText');
+
+            if (editingTarget === 'title') {
+                preview.style.background = '#2a2a2a';
+                preview.style.backdropFilter = 'none';
+                preview.style.boxShadow = 'none';
+                preview.style.border = '1px dashed #666';
+                previewText.style.display = 'inline-block';
+
+                if (currentEditorStyle.type === 'solid') {
+                    previewText.style.background = 'none';
+                    previewText.style.webkitBackgroundClip = 'unset';
+                    previewText.style.backgroundClip = 'unset';
+                    previewText.style.webkitTextFillColor = 'unset';
+                    previewText.style.color = alphaColors[0];
+                } else {
+                    previewText.style.background = bgString;
+                    previewText.style.webkitBackgroundClip = 'text';
+                    previewText.style.backgroundClip = 'text';
+                    previewText.style.webkitTextFillColor = 'transparent';
+                    previewText.style.color = 'transparent';
+                }
+                previewText.style.textShadow = currentEditorStyle.shadow_size > 0 ? `0 0 ${currentEditorStyle.shadow_size}px ${currentEditorStyle.shadow_color}` : 'none';
+            } else {
+                previewText.style.display = 'none';
+                preview.style.background = bgString;
+                preview.style.backdropFilter = `blur(${currentEditorStyle.glass_blur}px)`;
+                preview.style.boxShadow = `0 0 ${currentEditorStyle.shadow_size}px ${currentEditorStyle.shadow_color}`;
+                preview.style.border = `${currentEditorStyle.border_width}px solid ${currentEditorStyle.border_color}`;
+            }
+        }
+
+        function applyStyleChanges() {
+            if (editingTarget === 'title') {
+                currentConfig.title_style = JSON.parse(JSON.stringify(currentEditorStyle));
+            } else {
+                currentConfig.background_style = JSON.parse(JSON.stringify(currentEditorStyle));
+            }
+            renderMiniPreviews();
+            updateLivePreview();
+            closeStyleModal();
+            alert('Style applied! Remember to click "Save All Changes" to persist.');
+        }
+
+        // Save config
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            // Gather all values
+            currentConfig.milestone_goal = parseInt(milestoneGoalInput.value);
+            currentConfig.title_text = titleTextInput.value;
+            currentConfig.show_title = showTitleInput.checked;
+            currentConfig.show_background = showBgInput.checked;
+            currentConfig.progress_bar_start_color = hexToRgba(progressBarStartInput.value, document.getElementById('progressStartOpacity').value);
+            currentConfig.progress_bar_end_color = hexToRgba(progressBarEndInput.value, document.getElementById('progressEndOpacity').value);
+            currentConfig.count_color = hexToRgba(countColorInput.value, document.getElementById('countOpacity').value);
+            currentConfig.label_color = hexToRgba(labelColorInput.value, document.getElementById('labelOpacity').value);
+
+            try {
+                const response = await fetch('/api/gifts/update_config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+                const result = await response.json();
+
+                const status = document.getElementById('saveStatus');
+                if (result.success) {
+                    status.textContent = 'Configuration saved successfully!';
+                    status.className = 'status-success';
+                } else {
+                    status.textContent = 'Save failed: ' + result.error;
+                    status.className = 'status-error';
+                }
+                setTimeout(() => { status.textContent = ''; }, 3000);
+            } catch (error) {
+                const status = document.getElementById('saveStatus');
+                status.textContent = 'Error: ' + error.message;
+                status.className = 'status-error';
+            }
+        });
+
+        // Init
+        loadConfig();
+        function rgbaToHexAndOpacity(rgba) {
+            if (!rgba || !rgba.startsWith('rgba')) return { hex: rgba || '#000000', opacity: 1.0 };
+            const parts = rgba.match(/[\d.]+/g);
+            if (!parts || parts.length < 4) return { hex: '#000000', opacity: 1.0 };
+
+            const r = parseInt(parts[0]).toString(16).padStart(2, '0');
+            const g = parseInt(parts[1]).toString(16).padStart(2, '0');
+            const b = parseInt(parts[2]).toString(16).padStart(2, '0');
+            const a = parseFloat(parts[3]);
+
+            return { hex: `#${r}${g}${b}`, opacity: a };
+        }
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+</html>

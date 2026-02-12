@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Command Configuration</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: none;
+            color: var(--cyan);
+            -webkit-text-fill-color: initial;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .config-card {
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px var(--shadow-color);
+            margin-bottom: 30px;
+        }
+
+        .panel-title {
+            font-size: 1.2em;
+            color: var(--yellow);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .command-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .command-item {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .command-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .trigger {
+            color: var(--yellow);
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .filename {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .delete-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1em;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--blue);
+        }
+
+        .add-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .primary-btn {
+            background: var(--green);
+            color: var(--bg-primary);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--blue);
+            background: rgba(93, 173, 226, 0.1);
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .status-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            transform: translateY(100px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .status-success {
+            background: var(--green);
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .status-error {
+            background: var(--red);
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .show-status {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sound Commands</h1>
+            <p>Customize TTS sound triggers and audio files</p>
+            <div
+                style="max-width: 800px; margin: 20px auto 0; text-align: left; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border-left: 4px solid #f39c12;">
+                <p style="color: #f39c12; font-weight: bold; margin-bottom: 5px;">⚠️ Important Notes:</p>
+                <ul style="color: #ccc; margin-left: 20px; font-size: 0.9em; line-height: 1.5;">
+                    <li><strong>Do not rename audio files</strong> manually on disk. If you do, you must re-associate
+                        them here.</li>
+                    <li>Avoid linking different commands to the same audio file (it works, but not recommended).</li>
+                    <li>Duplicate command words are not allowed and will be prevented.</li>
+                    <li>Deleting a command will also delete the audio file if it is not used by any other command.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Add/Edit Command Section -->
+        <div class="config-card">
+            <div class="panel-title">Add / Edit Command</div>
+            <div class="add-form">
+                <div class="form-group">
+                    <label>Trigger Word</label>
+                    <input type="text" id="newTrigger" placeholder="!example" />
+                </div>
+                <div class="form-group">
+                    <label>Audio Source</label>
+                    <div style="margin-bottom: 10px;">
+                        <input type="radio" name="sourceType" value="existing" checked
+                            onchange="toggleSource('existing')"> Existing File
+                        <input type="radio" name="sourceType" value="upload" onchange="toggleSource('upload')"
+                            style="margin-left: 15px;"> Upload New
+                    </div>
+
+                    <div id="existingSource">
+                        <div style="display: flex; gap: 10px;">
+                            <select id="fileSelect">
+                                <option value="">Select an audio file...</option>
+                            </select>
+                            <button class="preview-btn"
+                                onclick="previewSound(document.getElementById('fileSelect').value)"
+                                style="background: #3498db; color: white; border: none; padding: 0 15px; border-radius: 8px; cursor: pointer;">Preview</button>
+                        </div>
+                    </div>
+
+                    <div id="uploadSource" style="display: none;">
+                        <input type="file" id="newFileInput" accept=".mp3,.wav,.ogg"
+                            style="background: rgba(0,0,0,0.2); width: 100%; padding: 10px; border-radius: 8px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="primary-btn" onclick="addCommand()">Save Command</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Command List Section -->
+        <div class="config-card">
+            <div class="panel-title">Active Commands</div>
+            <div id="commandList" class="command-list">
+                <!-- Commands will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="statusMessage" class="status-message"></div>
+
+    <script>
+        // Load config on startup
+        document.addEventListener('DOMContentLoaded', loadConfig);
+
+        let audioFiles = [];
+        let currentCommands = {};
+        let originalTrigger = null;
+
+        function toggleSource(type) {
+            document.getElementById('existingSource').style.display = type === 'existing' ? 'block' : 'none';
+            document.getElementById('uploadSource').style.display = type === 'upload' ? 'block' : 'none';
+        }
+
+        // Initial config setup from server injection
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+
+        async function loadConfig() {
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('Using server-injected sound config');
+                currentCommands = initialConfig;
+                // Note: injection might only have commands if that's what we passed
+                // But views.py passes sound_config.get_commands()
+                renderCommands(currentCommands);
+                // We still might need to fetch audio_files for the select dropdown
+            }
+
+            try {
+                const response = await fetch('/api/sounds/config');
+                const data = await response.json();
+
+                if (data.success) {
+                    currentCommands = data.commands;
+                    renderCommands(data.commands);
+                    updateFileSelect(data.audio_files);
+                    audioFiles = data.audio_files;
+                }
+            } catch (error) {
+                showStatus('Failed to load configuration', 'error');
+            }
+        }
+
+        function renderCommands(commands) {
+            const list = document.getElementById('commandList');
+            list.innerHTML = '';
+
+            // Sort by trigger length (longer triggers first, same as backend logic)
+            const sortedTriggers = Object.keys(commands).sort((a, b) => b.length - a.length);
+
+            sortedTriggers.forEach(trigger => {
+                // Handle both old format (string) and new format (object)
+                const cmdData = commands[trigger];
+                const filename = typeof cmdData === 'string' ? cmdData : cmdData.filename;
+                const volume = typeof cmdData === 'object' ? (cmdData.volume || 1.0) : 1.0;
+                const volumePercent = Math.round(volume * 100);
+
+                const item = document.createElement('div');
+                item.className = 'command-item';
+                item.style.flexDirection = 'column';
+                item.style.alignItems = 'stretch';
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="command-info">
+                            <span class="trigger">${trigger}</span>
+                            <span class="filename">play: ${filename}</span>
+                        </div>
+                        <div>
+                            <button class="preview-btn" onclick="editCommand('${trigger}', '${filename}')" style="margin-right: 10px; background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Edit</button>
+                            <button class="preview-btn" onclick="previewSound('${filename}', '${trigger}')" style="margin-right: 10px; background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Preview</button>
+                            <button class="delete-btn" onclick="deleteCommand('${trigger}')">Delete</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <label style="color: #aaa; margin: 0; min-width: 60px;">Volume:</label>
+                        <input type="range" min="0" max="100" value="${volumePercent}" 
+                               style="flex: 1; cursor: pointer;"
+                               onchange="updateVolume('${trigger}', this.value)"
+                               oninput="this.nextElementSibling.textContent = this.value + '%'">
+                        <span style="color: #E8D57C; min-width: 40px; text-align: right;">${volumePercent}%</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        async function updateVolume(trigger, volumePercent) {
+            const volume = volumePercent / 100;
+            try {
+                const response = await fetch('/api/sounds/volume', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trigger, volume })
+                });
+                if (response.ok) {
+                    showStatus('Volume updated', 'success');
+                } else {
+                    showStatus('Failed to update volume', 'error');
+                }
+            } catch (error) {
+                showStatus('Error updating volume', 'error');
+            }
+        }
+
+        function editCommand(trigger, filename) {
+            originalTrigger = trigger;
+
+            // Remove '!' for the input field
+            const cleanTrigger = trigger.startsWith('!') ? trigger.substring(1) : trigger;
+            document.getElementById('newTrigger').value = cleanTrigger;
+
+            // Update button text to indicate edit mode
+            document.querySelector('.primary-btn').textContent = "Update Command";
+
+            // Set file select
+            const select = document.getElementById('fileSelect');
+            if ([...select.options].some(o => o.value === filename)) {
+                select.value = filename;
+
+                document.querySelector('input[name="sourceType"][value="existing"]').checked = true;
+                toggleSource('existing');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showStatus('Editing ' + trigger, 'success');
+        }
+
+        function resetForm() {
+            document.getElementById('newTrigger').value = '';
+            document.getElementById('fileSelect').value = '';
+            document.getElementById('newFileInput').value = '';
+            originalTrigger = null;
+            document.querySelector('.primary-btn').textContent = "Save Command";
+        }
+
+        async function previewSound(filename, trigger = null) {
+            if (!filename) return;
+            try {
+                const body = { filename };
+                if (trigger) body.trigger = trigger;
+
+                await fetch('/api/sounds/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+            } catch (error) {
+                console.error("Preview failed:", error);
+            }
+        }
+
+        function updateFileSelect(files) {
+            const select = document.getElementById('fileSelect');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">Select an audio file...</option>';
+            files.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file;
+                option.textContent = file;
+                select.appendChild(option);
+            });
+            if (files.includes(currentVal)) {
+                select.value = currentVal;
+            }
+        }
+
+        async function addCommand() {
+            const triggerInput = document.getElementById('newTrigger');
+            let filename = '';
+
+            const sourceType = document.querySelector('input[name="sourceType"]:checked').value;
+
+            // 1. Handle File Upload or Selection
+            if (sourceType === 'upload') {
+                const fileInput = document.getElementById('newFileInput');
+                if (!fileInput.files || !fileInput.files[0]) {
+                    showStatus('Please select a file to upload', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                try {
+                    const upRes = await fetch('/api/sounds/upload', { method: 'POST', body: formData });
+                    const upData = await upRes.json();
+                    if (!upData.success) {
+                        showStatus(upData.error || 'Upload failed', 'error');
+                        return;
+                    }
+                    filename = upData.filename;
+                } catch (e) {
+                    showStatus('Upload error', 'error');
+                    return;
+                }
+            } else {
+                filename = document.getElementById('fileSelect').value;
+            }
+
+            // 2. Validate Inputs
+            let trigger = triggerInput.value.trim();
+            if (!trigger) {
+                showStatus('Please enter a trigger word', 'error');
+                return;
+            }
+            // Ensure trigger has ! prefix logic matches backend expectation or user input
+            // But user might type "test" and expect "!test". The backend handles adding ! if missing.
+            // Let's normalize here for checking.
+            if (!trigger.startsWith('!')) trigger = '!' + trigger;
+
+            if (!filename) {
+                showStatus('Please select an audio file', 'error');
+                return;
+            }
+
+            // 3. Validation Rules
+
+            // Rule A: Check Duplicate Trigger
+            // If we are NOT editing (originalTrigger is null) AND trigger exists -> Prevent
+            if (!originalTrigger && currentCommands.hasOwnProperty(trigger)) {
+                showStatus(`Command "${trigger}" already exists!`, 'error');
+                return;
+            }
+
+            // If we ARE editing, but changed the trigger to another existing one -> Prevent
+            if (originalTrigger && trigger !== originalTrigger && currentCommands.hasOwnProperty(trigger)) {
+                showStatus(`Command "${trigger}" already exists!`, 'error');
+                return;
+            }
+
+            // Rule B: Warning for File Reuse
+            // Check if this filename is used by OTHER commands
+            // If editing, ignore our own usage.
+            let usedBy = [];
+            for (const [cmd, file] of Object.entries(currentCommands)) {
+                if (file === filename) {
+                    // If we are editing and this is our command, don't count it
+                    if (originalTrigger && cmd === originalTrigger) continue;
+                    usedBy.push(cmd);
+                }
+            }
+
+            if (usedBy.length > 0) {
+                const msg = `Note: File "${filename}" is already used by: ${usedBy.join(', ')}. Linking multiple commands to one file is allowed but check if this is intended.`;
+                // We show this as a non-blocking toast or alert? 
+                // User said: "let the user know it but do allow it".
+                // We'll trust they see the toast, or we could use confirm().
+                // confirm() is safer.
+                if (!confirm(`${msg}\n\nContinue?`)) {
+                    return;
+                }
+            }
+
+            // 4. Perform Save (Create New / Rename Flow)
+            try {
+                // If this is a Rename (Editing and trigger changed), we must:
+                // 1. Create the NEW command first (so the file is now referenced by 2 commands)
+                // 2. Delete the OLD command (refcount drops, but stays >= 1, so file is safe)
+
+                const isRename = originalTrigger && trigger !== originalTrigger;
+
+                // Step 1: Update/Create target command
+                const response = await fetch('/api/sounds/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trigger, filename })
+                });
+
+                if (response.ok) {
+                    // Step 2: Delete old command if it was a rename
+                    if (isRename) {
+                        await fetch('/api/sounds/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ trigger: originalTrigger })
+                        });
+                    }
+
+                    showStatus('Command saved successfully', 'success');
+
+                    // Reset UI
+                    resetForm();
+
+                    if (sourceType === 'upload') {
+                        // Switch back to existing to show the new file in list
+                        document.querySelector('input[name="sourceType"][value="existing"]').checked = true;
+                        toggleSource('existing');
+                    }
+                    loadConfig();
+                } else {
+                    const data = await response.json();
+                    showStatus(data.error || 'Failed to save command', 'error');
+                }
+            } catch (error) {
+                showStatus('Error saving command', 'error');
+            }
+        }
+
+        async function deleteCommand(trigger) {
+            if (!confirm(`Delete command "${trigger}"?`)) return;
+
+            try {
+                const response = await fetch('/api/sounds/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trigger })
+                });
+
+                if (response.ok) {
+                    showStatus('Command deleted', 'success');
+                    // If we were editing this command, reset the form to avoid confusion
+                    if (originalTrigger === trigger) {
+                        resetForm();
+                    }
+                    loadConfig();
+                } else {
+                    showStatus('Failed to delete command', 'error');
+                }
+            } catch (error) {
+                showStatus('Error deleting command', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type} show-status`;
+            setTimeout(() => { statusEl.classList.remove('show-status'); }, 3000);
+        }
+    </script>
+
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,454 @@
+<!-- templates/members_progress_widget.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guard Progress Widget</title>
+    <style>
+        @import url('https://fonts.cdnfonts.com/css/terminus-ttf');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            font-family: 'Terminus (TTF)', 'Terminus', 'Menlo', 'Monaco', 'Consolas', monospace;
+            overflow: hidden;
+        }
+
+        .guard-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            /* background set by JS */
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            width: 400px;
+            overflow: hidden;
+            /* Prevent black corners in OBS */
+            background-clip: padding-box;
+            /* Force background to respect rounding */
+            transition: background-color 0.3s, opacity 0.3s, box-shadow 0.3s;
+        }
+
+        .guard-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            /* color set by JS */
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .progress-section {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .progress-section.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .progress-label {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #E8D57C;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .progress-bar-bg {
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease-out;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            /* Default gradient, overridden by specific classes or JS */
+            background: linear-gradient(90deg, #3498db 0%, #5dade2 100%);
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        .progress-numbers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: bold;
+        }
+
+        .current-count {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .reward-icon {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            flex-shrink: 0;
+            object-fit: contain;
+        }
+
+
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="guard-container">
+        <div class="guard-title" id="mainTitle">Loading...</div>
+        <div id="progressSectionsContainer"></div>
+    </div>
+
+    <script>
+        const socket = io();
+        // Initial config setup from server injection
+        const initialConfig = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+        const initialCount = Number('{{ initial_count | default (0) }}');
+
+        console.log('[DEBUG] Widget script loaded');
+
+        // Load configuration on startup
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('[DEBUG] DOMContentLoaded fired');
+
+            if (initialConfig && Object.keys(initialConfig).length > 0) {
+                console.log('[DEBUG] Using server-injected config');
+                config = initialConfig;
+                totalGuardCount = initialCount;
+                renderWidget();
+                updateProgress(totalGuardCount);
+            } else {
+                await fetchConfig();
+            }
+
+            // Listen for config updates
+            socket.on('members_progress:config_updated', (newConfig) => {
+                console.log('[DEBUG] ===== SOCKET EVENT RECEIVED =====');
+                console.log('[DEBUG] Event: members_progress:config_updated');
+                console.log('[DEBUG] Received config:', JSON.stringify(newConfig, null, 2));
+                config = newConfig;
+                console.log('[DEBUG] Calling renderWidget()...');
+                renderWidget();
+                console.log('[DEBUG] Calling updateProgress(' + totalGuardCount + ')...');
+                updateProgress(totalGuardCount);
+                console.log('[DEBUG] ===== SOCKET EVENT COMPLETE =====');
+            });
+
+            console.log('[DEBUG] Socket listener registered for members_progress:config_updated');
+        });
+
+        async function fetchConfig() {
+            console.log('[DEBUG] fetchConfig() called');
+            try {
+                const response = await fetch('/api/members_progress/config');
+                console.log('[DEBUG] API response status:', response.status);
+                const data = await response.json();
+                console.log('[DEBUG] API response data:', JSON.stringify(data, null, 2));
+                if (data.success) {
+                    config = data.config;
+                    console.log('[DEBUG] Config loaded successfully, calling renderWidget()...');
+                    renderWidget();
+                    updateProgress(totalGuardCount);
+                } else {
+                    console.error('[DEBUG] API returned success=false');
+                }
+            } catch (error) {
+                console.error('[DEBUG] fetchConfig error:', error);
+            }
+        }
+
+        function renderWidget() {
+            console.log('[DEBUG] renderWidget() called');
+            console.log('[DEBUG] Current config:', JSON.stringify(config, null, 2));
+            try {
+                // Update title
+                const titleEl = document.getElementById('mainTitle');
+                titleEl.textContent = config.title_text || 'Member Progress';
+                titleEl.style.display = (config.show_title === false) ? 'none' : 'block';
+
+                // Apply Title Style
+                if (config.title_style) {
+                    applyStyleToElement(titleEl, config.title_style, true);
+                    // Force text clipping for gradients on text
+                    if (config.title_style.type === 'linear' || config.title_style.type === 'radial') {
+                        titleEl.style.webkitBackgroundClip = 'text';
+                        titleEl.style.backgroundClip = 'text';
+                        titleEl.style.webkitTextFillColor = 'transparent';
+                    } else {
+                        titleEl.style.webkitBackgroundClip = 'border-box';
+                        titleEl.style.backgroundClip = 'border-box';
+                        // Use hexToRgba to apply transparency to solid color text
+                        const alpha = config.title_style.glass_opacity !== undefined ? config.title_style.glass_opacity : 1.0;
+                        const textColor = hexToRgba(config.title_style.colors ? config.title_style.colors[0] : '#E8D57C', alpha);
+                        titleEl.style.webkitTextFillColor = textColor;
+                        titleEl.style.color = textColor;
+                    }
+                } else {
+                    // Fallback
+                    titleEl.style.color = config.title_color || '#E8D57C';
+                }
+
+                // Update container background
+                const bgContainer = document.querySelector('.guard-container');
+                if (config.show_background === false) {
+                    bgContainer.style.background = 'transparent';
+                    bgContainer.style.boxShadow = 'none';
+                    bgContainer.style.border = 'none';
+                    bgContainer.style.backdropFilter = 'none';
+                } else {
+                    if (config.background_style) {
+                        applyStyleToElement(bgContainer, config.background_style, false);
+                    } else {
+                        bgContainer.style.background = config.background_color || '#5A4F77';
+                    }
+                }
+
+                const container = document.getElementById('progressSectionsContainer');
+                container.innerHTML = ''; // Clear existing
+
+                // Generate DOM for each level
+                // Generate DOM for each level
+                const countColor = config.count_color || '#ffffff';
+                const labelColor = config.label_color || 'rgba(255, 255, 255, 0.8)';
+                const imageSize = config.image_size || 80;
+
+                config.levels.forEach((level, index) => {
+                    const section = document.createElement('div');
+                    section.className = 'progress-section';
+                    section.id = `section-${index}`;
+
+                    // Use dynamic gradient from config (with defaults)
+                    const startColor = level.start_color || '#3498db';
+                    const endColor = level.end_color || '#5dade2';
+                    const gradientStyle = `linear-gradient(90deg, ${startColor} 0%, ${endColor} 100%)`;
+
+                    section.innerHTML = `
+                    <div class="progress-wrapper">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar" id="bar-${index}" style="width: 0%; background: ${gradientStyle};">
+                                    <div class="current-count" id="count-${index}" style="color: ${countColor};">0</div>
+                                </div>
+                            </div>
+                            <div class="progress-numbers" style="color: ${labelColor};">
+                                <span>${level.min}</span>
+                                <span>${level.max >= 999999 ? '∞' : level.max}</span>
+                            </div>
+                        </div>
+                        <img src="/static/${level.image}" class="reward-icon" alt="Reward" style="width: ${imageSize}px; height: ${imageSize}px;">
+                    </div>
+                `;
+                    container.appendChild(section);
+                });
+                console.log('[DEBUG] renderWidget() completed successfully, rendered ' + config.levels.length + ' levels');
+            } catch (error) {
+                console.error('[DEBUG] renderWidget() ERROR:', error);
+            }
+        }
+
+        function applyStyleToElement(el, style, isText) {
+            let alpha = style.glass_opacity !== undefined ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#ffffff']).map(c => hexToRgba(c, alpha));
+
+            let bgString = '';
+            if (style.type === 'solid') {
+                bgString = colors[0];
+            } else if (style.type === 'linear') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `linear-gradient(${style.angle || 90}deg, ${gradColors.join(', ')})`;
+            } else if (style.type === 'radial') {
+                let gradColors = colors.length === 1 ? [colors[0], colors[0]] : colors;
+                bgString = `radial-gradient(circle, ${gradColors.join(', ')})`;
+            }
+
+            // Fix: For text in solid mode, do NOT set background (it creates a colored box)
+            if (isText && style.type === 'solid') {
+                el.style.background = 'transparent';
+            } else {
+                el.style.background = bgString;
+            }
+
+            // Shadows
+            if (style.shadow_size > 0) {
+                // Text shadow vs box shadow
+                if (isText) {
+                    el.style.textShadow = `0 0 ${style.shadow_size}px ${style.shadow_color || '#000000'}`;
+                    el.style.boxShadow = 'none';
+                } else {
+                    el.style.boxShadow = `0 0 ${style.shadow_size}px ${style.shadow_color || '#000000'}`;
+                    el.style.textShadow = 'none';
+                }
+            } else {
+                el.style.boxShadow = 'none';
+                el.style.textShadow = 'none';
+            }
+
+            // Borders (only for box)
+            if (!isText) {
+                if (style.border_width > 0) {
+                    el.style.border = `${style.border_width}px solid ${style.border_color || '#ffffff'}`;
+                } else {
+                    el.style.border = 'none';
+                }
+            }
+
+            // Glass Blur (only for box)
+            if (!isText && style.glass_blur > 0) {
+                el.style.backdropFilter = `blur(${style.glass_blur}px)`;
+                el.style.webkitBackdropFilter = `blur(${style.glass_blur}px)`;
+            } else if (!isText) {
+                el.style.backdropFilter = 'none';
+                el.style.webkitBackdropFilter = 'none';
+            }
+
+            // OBS clipping fix
+            if (!isText) {
+                el.style.overflow = 'hidden';
+                el.style.backgroundClip = 'padding-box';
+            }
+        }
+
+        function hexToRgba(hex, alpha) {
+            let c;
+            if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+                c = hex.substring(1).split('');
+                if (c.length == 3) {
+                    c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+                }
+                c = '0x' + c.join('');
+                return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+            }
+            return hex; // Fallback
+        }
+
+        function updateProgress(total) {
+            totalGuardCount = total;
+
+            // Hide all sections first
+            document.querySelectorAll('.progress-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            if (config.levels.length === 0) return;
+
+            // Find active level
+            let activeIndex = 0;
+            for (let i = 0; i < config.levels.length; i++) {
+                const level = config.levels[i];
+                if (total >= level.min && (i === config.levels.length - 1 || total < level.max)) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            // Show active section
+            const activeSection = document.getElementById(`section-${activeIndex}`);
+            if (activeSection) {
+                activeSection.classList.add('active');
+
+                const level = config.levels[activeIndex];
+                const bar = document.getElementById(`bar-${activeIndex}`);
+                const count = document.getElementById(`count-${activeIndex}`);
+
+                // Calculate percentage
+                let percentage;
+                if (level.max >= 999999) {
+                    // For infinite level, simulate progress (e.g., 100 more steps)
+                    percentage = Math.min(100, ((total - level.min) / 100) * 100);
+                } else {
+                    percentage = Math.max(0, Math.min(100, ((total - level.min) / (level.max - level.min)) * 100));
+                }
+
+                if (bar) bar.style.width = `${percentage}%`;
+                if (count) count.textContent = total;
+            }
+        }
+
+        // Socket.io event handlers
+        socket.on('connect', () => {
+            console.log('[DEBUG] ===== SOCKET CONNECTED =====');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('[DEBUG] ===== SOCKET DISCONNECTED =====');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('[DEBUG] Socket connection error:', error);
+        });
+
+        socket.on('initial_state', (state) => {
+            if (state.total_guard_count !== undefined) {
+                updateProgress(state.total_guard_count);
+            }
+        });
+
+        socket.on('guard', (data) => {
+            if (data.total_guard_count !== undefined) {
+                updateProgress(data.total_guard_count);
+            }
+        });
+    </script>
+</body>
+
+</html>

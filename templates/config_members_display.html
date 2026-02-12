@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Display Configuration</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script src="/static/theme.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: var(--violet);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .header-btn:hover {
+            background: var(--bg-primary);
+            border-color: var(--violet);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px var(--shadow-color);
+            margin-bottom: 30px;
+            backdrop-filter: blur(4px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: var(--yellow);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .tier-column {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .tier-column:hover {
+            transform: translateY(-5px);
+        }
+
+        .tier-captain {
+            border-top: 3px solid var(--blue);
+        }
+
+        .tier-admiral {
+            border-top: 3px solid var(--red);
+        }
+
+        .tier-governor {
+            border-top: 3px solid var(--orange);
+        }
+
+        .tier-header {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 700;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .tier-captain .tier-header {
+            color: var(--blue);
+            text-shadow: 0 0 10px rgba(38, 139, 210, 0.3);
+        }
+
+        .tier-admiral .tier-header {
+            color: var(--red);
+            text-shadow: 0 0 10px rgba(220, 50, 47, 0.3);
+        }
+
+        .tier-governor .tier-header {
+            color: var(--orange);
+            text-shadow: 0 0 10px rgba(203, 75, 22, 0.3);
+        }
+
+        .style-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .style-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .style-card-title {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .mini-preview-box {
+            height: 70px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        .mini-preview-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .control-label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .mini-preview-small {
+            width: 80px;
+            height: 36px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sticky-footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--bg-primary);
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            z-index: 100;
+            margin: 0 -20px -20px;
+        }
+
+        .live-preview-card {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9/16;
+            background: transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border: 2px solid var(--border-color);
+        }
+
+        .lp-bg-gif {
+            width: 65%;
+            height: auto;
+            margin-bottom: 20px;
+            z-index: 1;
+            animation: floatPreview 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+        }
+
+        .lp-member-info {
+            position: relative;
+            z-index: 2;
+            padding: 15px;
+            border-radius: 12px;
+            width: 85%;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .lp-member-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .lp-member-rank {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .lp-thank-you {
+            font-size: 0.9em;
+            color: var(--text-primary);
+            opacity: 0.9;
+        }
+
+        @keyframes floatPreview {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .btn {
+            background: var(--violet);
+            color: var(--bg-primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(var(--blue-rgb, 38, 139, 210), 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--violet);
+            transform: translateY(-2px);
+            box-shadow: none;
+            color: var(--text-primary);
+        }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 0.8em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--violet);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-wrapper {
+            width: 50px;
+            height: 26px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-wrapper.checked {
+            background: var(--violet);
+        }
+
+        .toggle-knob {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-wrapper.checked .toggle-knob {
+            transform: translateX(24px);
+        }
+
+        .warning-box {
+            background: rgba(220, 50, 47, 0.15);
+            border: 1px solid rgba(220, 50, 47, 0.3);
+            color: var(--red);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+            font-size: 0.85em;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .gif-preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .gif-preview-box {
+            background: transparent;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .gif-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .gif-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* MODAL (Updated) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            background: var(--bg-tertiary);
+            border-radius: 0 0 16px 16px;
+        }
+
+        /* Standardized Style Controls */
+        .style-option-row {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .style-option-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .style-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .color-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            background: var(--bg-tertiary);
+            padding: 5px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        input[type="color"] {
+            appearance: none;
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 30px;
+            background: none;
+            cursor: pointer;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        input[type="number"],
+        input[type="range"] {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            padding: 8px;
+            color: var(--text-primary);
+            width: 100%;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1em;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <a href="/" class="header-btn"><i class="fas fa-chevron-left"></i> Dashboard</a>
+            <h1>Member Display Settings</h1>
+            <p>Customize visuals and triggers for your fleet members</p>
+        </div>
+
+        <!-- Live Preview Section -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-eye"></i> Live Previews</div>
+            </div>
+            <div class="tier-grid">
+                {% set tier_map = {'captain': '舰长', 'admiral': '提督', 'governor': '总督'} %}
+                {% for tier in ['captain', 'admiral', 'governor'] %}
+                <div class="tier-column tier-{{ tier }}" style="background:none; border:none; padding:0;">
+                    <div class="live-preview-card" id="lp-card-{{ tier }}">
+                        <img src="{{ config.gifs[tier].url }}" class="lp-bg-gif" id="lp-gif-{{ tier }}"
+                            alt="{{ tier }}">
+                        <div class="lp-member-info" id="lp-info-{{ tier }}">
+                            <div class="lp-member-name" id="lp-name-{{ tier }}">用户名示例</div>
+                            <div class="lp-member-rank" id="lp-rank-{{ tier }}">{{ tier_map[tier] }}</div>
+                            <div class="lp-thank-you" id="lp-thank-{{ tier }}">{{ config.thank_you_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-comment-dots"></i> Global Settings</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showMemberInfoToggle" style="display:none"
+                        onchange="updateShowMemberInfo(this.checked)">
+                    <div class="toggle-wrapper" id="showMemberInfoWrapper">
+                        <div class="toggle-knob"></div>
+                    </div>
+                    <span>Show Member Info Card</span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label class="control-label"
+                    style="font-weight:600; color:var(--text-secondary); margin-bottom:8px; display:block;">Thank You
+                    Message</label>
+                <div class="thank-you-container" style="display:flex; gap:10px;">
+                    <input type="text" id="thankYouText" placeholder="e.g., 感谢您的支持！" value="{{ config.thank_you_text }}"
+                        oninput="updateThankYouPreview(this.value)">
+                    <button class="btn" onclick="saveThankYouText()">Save</button>
+                    <button class="btn btn-outline" onclick="resetThankYouText()">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tier Customization -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-palette"></i> Tier Customization</div>
+            </div>
+            <div class="tier-grid">
+                {% for tier in ['captain', 'admiral', 'governor'] %}
+                <div class="tier-column tier-{{ tier }}">
+                    <div class="tier-header">{{ tier_map[tier] }}</div>
+
+                    <div class="style-card" style="margin-bottom: 5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="style-card-title" style="color:var(--text-primary); font-size: 0.85em;">Webhook
+                                Trigger</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="webhookToggle-{{ tier }}" style="display:none"
+                                    onchange="updateEnableWebhook('{{ tier }}', this.checked)">
+                                <div class="toggle-wrapper" id="webhookWrapper-{{ tier }}">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="warning-box" id="webhookWarning-{{ tier }}"><i
+                                class="fas fa-exclamation-triangle"></i><span>Missing URL.</span>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-label">Background</div>
+                        <div class="mini-preview-small" id="preview-{{ tier }}-bg">
+                            <div class="mini-preview-content">Style</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="openStyleEditor('{{ tier }}', 'bg_style')">
+                            Customize
+                        </button>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-label">Name Color</div>
+                        <div class="mini-preview-small" id="preview-{{ tier }}-name">
+                            <div class="mini-preview-content">Name</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="openStyleEditor('{{ tier }}', 'name_style')">
+                            Customize
+                        </button>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-label">Rank Color</div>
+                        <div class="mini-preview-small" id="preview-{{ tier }}-rank">
+                            <div class="mini-preview-content">Rank</div>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="openStyleEditor('{{ tier }}', 'rank_style')">
+                            Customize
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Custom Animations -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-film"></i> Custom Animations</div>
+            </div>
+            <div class="tier-grid">
+                {% for tier_name, data in config.gifs.items() %}
+                <div class="tier-column tier-{{ tier_name }}" style="border:none; background:none;">
+                    <div class="tier-header">{{ tier_name|capitalize }}</div>
+                    <div class="gif-preview-container">
+                        <div class="gif-preview-box">
+                            <div class="loading-overlay" id="loading-{{ tier_name }}"><i
+                                    class="fas fa-spinner fa-spin"></i></div>
+                            <img src="{{ data.url }}" id="img-{{ tier_name }}" alt="{{ tier_name }} animation">
+                        </div>
+                        <div class="gif-controls">
+                            <input type="file" id="file-{{ tier_name }}" accept=".gif,.png,.jpg,.webp"
+                                style="display:none" onchange="uploadGif('{{ tier_name }}')">
+                            <button class="btn btn-sm"
+                                onclick="document.getElementById('file-{{ tier_name }}').click()"><i
+                                    class="fas fa-upload"></i> Upload</button>
+                            {% if data.is_custom %}
+                            <button class="btn btn-sm btn-outline" onclick="resetGif('{{ tier_name }}')"><i
+                                    class="fas fa-undo"></i> Reset</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="sticky-footer">
+            <button class="btn" style="padding: 15px 40px; font-size: 1.1em; width: 100%; max-width: 600px;"
+                onclick="saveStyles()">
+                <i class="fas fa-save" style="margin-right: 10px;"></i> Save All Configuration
+            </button>
+        </div>
+    </div>
+
+    <!-- Standardized Style Modal -->
+    <div class="modal-overlay" id="styleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Edit Style</div>
+                <button class="modal-close" onclick="closeStyleEditor()">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="style-option-row">
+                    <div class="style-label">Fill Type</div>
+                    <select id="styleMode" onchange="updateModalUI(); updateModalPreview();">
+                        <option value="solid">Solid Color</option>
+                        <option value="linear">Linear Gradient</option>
+                        <option value="radial">Radial Gradient</option>
+                    </select>
+                </div>
+
+                <div class="style-option-row">
+                    <div class="style-label">
+                        <span>Colors</span>
+                        <button class="btn btn-sm btn-outline" onclick="addModalColor()">+ Add Color</button>
+                    </div>
+                    <div id="colorList" class="color-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="style-option-row" id="angleControl">
+                    <div class="style-label">Gradient Angle: <span id="angleValue">90</span>°</div>
+                    <input type="range" id="styleAngle" min="0" max="360" value="90"
+                        oninput="document.getElementById('angleValue').innerText=this.value; updateModalPreview();">
+                </div>
+
+                <!-- Box-specific controls (Hidden for Text) -->
+                <div id="boxControls">
+                    <div class="style-option-row">
+                        <div class="style-label">Glass Blur: <span id="blurValue">0</span>px</div>
+                        <input type="range" id="styleBlur" min="0" max="50" value="0"
+                            oninput="document.getElementById('blurValue').innerText=this.value; updateModalPreview();">
+                    </div>
+
+                    <div class="style-option-row">
+                        <div class="style-label">Opacity (0-1): <span id="opacityValue">1.0</span></div>
+                        <input type="range" id="styleOpacity" min="0" max="1" step="0.1" value="1.0"
+                            oninput="document.getElementById('opacityValue').innerText=this.value; updateModalPreview();">
+                    </div>
+
+                    <div class="style-option-row">
+                        <div class="style-label">Border Width: <span id="borderWidthValue">0</span>px</div>
+                        <input type="range" id="styleBorderWidth" min="0" max="20" value="0"
+                            oninput="document.getElementById('borderWidthValue').innerText=this.value; updateModalPreview();">
+                        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.9em; color:var(--text-secondary);">Border Color</span>
+                            <input type="color" id="styleBorderColor" onchange="updateModalPreview();">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shadow (Common) -->
+                <div class="style-option-row">
+                    <div class="style-label">Shadow Size: <span id="shadowSizeValue">0</span>px</div>
+                    <input type="range" id="styleShadowSize" min="0" max="50" value="0"
+                        oninput="document.getElementById('shadowSizeValue').innerText=this.value; updateModalPreview();">
+                    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.9em; color:var(--text-secondary);">Shadow Color</span>
+                        <input type="color" id="styleShadowColor" onchange="updateModalPreview();">
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="style-option-row">
+                    <div class="style-label">Preview</div>
+                    <div id="modalPreviewBox" class="mini-preview-box" style="height: 100px;">
+                        <div id="modalPreviewContent" class="mini-preview-content" style="font-size: 1.5em;">Preview
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeStyleEditor()">Cancel</button>
+                <button class="btn" onclick="applyStyleChanges()">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Init state
+        let currentStyles = JSON.parse('{{ config | default ({}) | tojson | safe }}');
+        let currentUrls = {
+            'captain': "{{ config.gifs['captain'].url if config and config.gifs else '' }}",
+            'admiral': "{{ config.gifs['admiral'].url if config and config.gifs else '' }}",
+            'governor': "{{ config.gifs['governor'].url if config and config.gifs else '' }}"
+        };
+
+        // Edit State
+        let editingTier = null;
+        let editingKey = null; // 'bg_style', 'name_style', 'rank_style'
+        let currentEditorStyle = {}; // Temporary holding state
+
+        function init() {
+            // Apply Toggles
+            document.getElementById('showMemberInfoWrapper').classList.toggle('checked', currentStyles.show_member_info);
+            document.getElementById('showMemberInfoToggle').checked = currentStyles.show_member_info;
+
+            ['captain', 'admiral', 'governor'].forEach(tier => {
+                let en = currentStyles['enable_webhook_' + tier];
+                document.getElementById('webhookWrapper-' + tier).classList.toggle('checked', en);
+                document.getElementById('webhookToggle-' + tier).checked = en;
+                checkWebhookWarning(tier);
+            });
+
+            renderAllPreviews();
+        }
+
+        // --- Helpers ---
+        function hexToRgba(hex, alpha = 1.0) {
+            if (!hex) return 'rgba(255,255,255,1)';
+            if (hex.startsWith('rgba') || hex.startsWith('rgb')) return hex; // Assume it's already ok, or parse if alpha injection needed
+            // If explicit alpha passed, rewrite standard rgb/a
+            // For simplicitly, assume hex input
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // --- Editor Logic ---
+        function openStyleEditor(tier, key) {
+            editingTier = tier;
+            editingKey = key;
+
+            // Resilience: Ensure tier object exists
+            if (!currentStyles.styles[tier]) currentStyles.styles[tier] = {};
+
+            // Resilience: Ensure style object exists
+            if (!currentStyles.styles[tier][key]) {
+                currentStyles.styles[tier][key] = {
+                    type: 'solid', colors: ['#ffffff'], angle: 90,
+                    shadow_size: 0, shadow_color: '#000000',
+                    border_width: 0, border_color: '#ffffff',
+                    glass_blur: 0, glass_opacity: 1.0
+                };
+            }
+
+            const style = currentStyles.styles[tier][key];
+
+            // Clone to temp
+            currentEditorStyle = JSON.parse(JSON.stringify(style));
+            // Defaults
+            if (!currentEditorStyle.colors) currentEditorStyle.colors = ['#ffffff'];
+            if (!currentEditorStyle.type) currentEditorStyle.type = 'solid';
+
+            // Set UI Title
+            const titleMap = { 'bg_style': 'Background Style', 'name_style': 'Name Style', 'rank_style': 'Rank Badge Style' };
+            document.getElementById('modalTitle').innerText = `${tier.toUpperCase()} - ${titleMap[key] || key}`;
+
+            // Populate Fields
+            document.getElementById('styleMode').value = currentEditorStyle.type;
+            document.getElementById('styleAngle').value = currentEditorStyle.angle || 90;
+            document.getElementById('angleValue').innerText = currentEditorStyle.angle || 90;
+
+            document.getElementById('styleBlur').value = currentEditorStyle.glass_blur || 0;
+            document.getElementById('blurValue').innerText = currentEditorStyle.glass_blur || 0;
+
+            document.getElementById('styleOpacity').value = (currentEditorStyle.glass_opacity !== undefined) ? currentEditorStyle.glass_opacity : 1.0;
+            document.getElementById('opacityValue').innerText = (currentEditorStyle.glass_opacity !== undefined) ? currentEditorStyle.glass_opacity : 1.0;
+
+            document.getElementById('styleBorderWidth').value = currentEditorStyle.border_width || 0;
+            document.getElementById('borderWidthValue').innerText = currentEditorStyle.border_width || 0;
+            document.getElementById('styleBorderColor').value = currentEditorStyle.border_color || '#ffffff';
+
+            document.getElementById('styleShadowSize').value = currentEditorStyle.shadow_size || 0;
+            document.getElementById('shadowSizeValue').innerText = currentEditorStyle.shadow_size || 0;
+            document.getElementById('styleShadowColor').value = currentEditorStyle.shadow_color || '#000000';
+
+            renderColorList();
+            updateModalUI();
+            updateModalPreview();
+
+            const m = document.getElementById('styleModal');
+            m.style.display = 'flex';
+            setTimeout(() => m.classList.add('active'), 10);
+        }
+
+        function closeStyleEditor() {
+            const m = document.getElementById('styleModal');
+            m.classList.remove('active');
+            setTimeout(() => { m.style.display = 'none'; editingTier = null; }, 300);
+
+            // Revert live preview to saved state (in case user cancelled)
+            renderAllPreviews();
+        }
+
+        function updateModalUI() {
+            // Update Temp State from Inputs
+            currentEditorStyle.type = document.getElementById('styleMode').value;
+
+            // Visibility Logic
+            const isLinear = currentEditorStyle.type === 'linear';
+            document.getElementById('angleControl').style.display = isLinear ? 'block' : 'none';
+
+            // Show/Hide Box Controls based on Key
+            const isText = (editingKey === 'name_style' || editingKey === 'rank_style');
+            document.getElementById('boxControls').style.display = isText ? 'none' : 'block';
+        }
+
+        function renderColorList() {
+            const c = document.getElementById('colorList');
+            c.innerHTML = '';
+            currentEditorStyle.colors.forEach((col, idx) => {
+                const item = document.createElement('div');
+                item.className = 'color-item';
+                let removeBtn = '';
+                if (currentEditorStyle.colors.length > 1) {
+                    removeBtn = `<span onclick="removeModalColor(${idx})" style="cursor:pointer; margin-left:8px; color:#ff6b6b; font-weight:bold;">&times;</span>`;
+                }
+                item.innerHTML = `<input type="color" value="${col}" onchange="updateModalColor(${idx}, this.value); updateModalPreview();"> ${removeBtn}`;
+                c.appendChild(item);
+            });
+        }
+
+        function addModalColor() {
+            currentEditorStyle.colors.push('#ffffff');
+            renderColorList();
+        }
+
+        function removeModalColor(idx) {
+            currentEditorStyle.colors.splice(idx, 1);
+            renderColorList();
+        }
+
+        function updateModalColor(idx, val) {
+            currentEditorStyle.colors[idx] = val;
+        }
+
+        function applyStyleChanges() {
+            // Read values back from Inputs into currentEditorStyle
+            currentEditorStyle.angle = parseInt(document.getElementById('styleAngle').value);
+
+            // Only read box props if not text
+            if (editingKey === 'bg_style') {
+                currentEditorStyle.glass_blur = parseInt(document.getElementById('styleBlur').value);
+                currentEditorStyle.glass_opacity = parseFloat(document.getElementById('styleOpacity').value);
+                currentEditorStyle.border_width = parseInt(document.getElementById('styleBorderWidth').value);
+                currentEditorStyle.border_color = document.getElementById('styleBorderColor').value;
+            }
+
+            currentEditorStyle.shadow_size = parseInt(document.getElementById('styleShadowSize').value);
+            currentEditorStyle.shadow_color = document.getElementById('styleShadowColor').value;
+
+            // Commit to global state
+            currentStyles.styles[editingTier][editingKey] = JSON.parse(JSON.stringify(currentEditorStyle));
+
+            renderAllPreviews();
+            closeStyleEditor();
+        }
+
+        function updateModalPreview() {
+            const previewEl = document.getElementById('modalPreviewBox');
+            const previewContent = document.getElementById('modalPreviewContent');
+            const isText = (editingKey === 'name_style' || editingKey === 'rank_style');
+
+            // Construct state from UI
+            const tempStyle = {
+                type: document.getElementById('styleMode').value,
+                colors: Array.from(document.querySelectorAll('#colorList input[type="color"]')).map(i => i.value),
+                angle: parseInt(document.getElementById('styleAngle').value),
+                glass_blur: parseInt(document.getElementById('styleBlur').value),
+                glass_opacity: parseFloat(document.getElementById('styleOpacity').value),
+                border_width: parseInt(document.getElementById('styleBorderWidth').value),
+                border_color: document.getElementById('styleBorderColor').value,
+                shadow_size: parseInt(document.getElementById('styleShadowSize').value),
+                shadow_color: document.getElementById('styleShadowColor').value
+            };
+
+            // Clean
+            previewEl.style.background = 'none'; previewEl.style.backgroundImage = 'none';
+            previewContent.style.color = '#fff'; previewContent.style.filter = 'none';
+            previewContent.style.webkitBackgroundClip = 'initial'; previewContent.style.webkitTextFillColor = 'initial';
+
+            let alpha = tempStyle.glass_opacity;
+            let colors = tempStyle.colors.map(c => (!isText) ? hexToRgba(c, alpha) : c);
+
+            let bg = colors[0];
+            if (tempStyle.type === 'linear') {
+                let cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+                bg = `linear-gradient(${tempStyle.angle}deg, ${cs.join(',')})`;
+            } else if (tempStyle.type === 'radial') {
+                let cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+                bg = `radial-gradient(circle, ${cs.join(',')})`;
+            }
+
+            if (!isText) {
+                previewEl.style.background = bg;
+                previewEl.style.border = `${tempStyle.border_width}px solid ${tempStyle.border_color}`;
+                // Simplified blur display in preview
+                previewEl.style.backdropFilter = `blur(${tempStyle.glass_blur}px)`;
+            } else {
+                // Removed checkerboard for text contrast
+                previewEl.style.background = 'transparent';
+
+                if (tempStyle.type === 'solid') {
+                    previewContent.style.color = colors[0];
+                } else {
+                    previewContent.style.background = bg;
+                    previewContent.style.webkitBackgroundClip = 'text';
+                    previewContent.style.webkitTextFillColor = 'transparent';
+                }
+            }
+            if (tempStyle.shadow_size > 0) {
+                previewContent.style.filter = `drop-shadow(0 0 ${tempStyle.shadow_size}px ${tempStyle.shadow_color})`;
+            }
+
+            // Real-time update for main page Live Preview card
+            if (editingTier) {
+                const liveElId = (editingKey === 'bg_style') ? `lp-info-${editingTier}` :
+                    (editingKey === 'name_style') ? `lp-name-${editingTier}` : `lp-rank-${editingTier}`;
+                const liveEl = document.getElementById(liveElId);
+                if (liveEl) {
+                    applyStyleToEl(liveEl, tempStyle, isText);
+                }
+            }
+        }
+
+        // --- Save & Sync ---
+        async function saveStyles() {
+            try {
+                const payload = {
+                    styles: currentStyles.styles,
+                    show_member_info: currentStyles.show_member_info,
+                    enable_webhook_captain: currentStyles.enable_webhook_captain,
+                    enable_webhook_admiral: currentStyles.enable_webhook_admiral,
+                    enable_webhook_governor: currentStyles.enable_webhook_governor
+                };
+                const res = await fetch('/api/members/set_styles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentStyles = data;
+                    renderAllPreviews();
+                    alert('Configuration saved successfully!');
+                } else alert('Save failed: ' + data.error);
+            } catch (e) { console.error(e); }
+        }
+
+        async function updateShowMemberInfo(checked) {
+            document.getElementById('showMemberInfoWrapper').classList.toggle('checked', checked);
+            currentStyles.show_member_info = checked;
+            renderAllPreviews();
+        }
+
+        async function updateEnableWebhook(tier, checked) {
+            document.getElementById('webhookWrapper-' + tier).classList.toggle('checked', checked);
+            currentStyles['enable_webhook_' + tier] = checked;
+            checkWebhookWarning(tier);
+        }
+
+        async function checkWebhookWarning(tier) {
+            const warningEl = document.getElementById('webhookWarning-' + tier);
+            const isEn = document.getElementById('webhookWrapper-' + tier).classList.contains('checked');
+            if (!isEn) { warningEl.style.display = 'none'; return; }
+            try {
+                const r = await fetch('/api/webhook/status');
+                const d = await r.json();
+                if (d.success && !d.configured[tier]) warningEl.style.display = 'flex';
+                else warningEl.style.display = 'none';
+            } catch (e) { }
+        }
+
+        function updateThankYouPreview(text) {
+            document.querySelectorAll('.lp-thank-you').forEach(e => e.innerText = text);
+        }
+
+        async function saveThankYouText() {
+            const text = document.getElementById('thankYouText').value;
+            try {
+                const res = await fetch('/api/members/set_thank_you_text', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentStyles = data;
+                    alert('Saved!');
+                    document.querySelectorAll('.lp-thank-you').forEach(e => e.innerText = text);
+                } else alert('Save failed');
+            } catch (e) { alert('Error'); }
+        }
+
+        async function resetThankYouText() {
+            if (!confirm('Reset?')) return;
+            const res = await fetch('/api/members/get_thank_you_text');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('thankYouText').value = data.default;
+                saveThankYouText();
+            }
+        }
+
+        // --- Render ---
+        function renderAllPreviews() {
+            ['captain', 'admiral', 'governor'].forEach(tier => {
+                renderMiniPreview(tier, 'bg_style', document.getElementById(`preview-${tier}-bg`));
+                renderMiniPreview(tier, 'name_style', document.getElementById(`preview-${tier}-name`));
+                renderMiniPreview(tier, 'rank_style', document.getElementById(`preview-${tier}-rank`));
+                renderLivePreview(tier);
+            });
+        }
+
+        function renderMiniPreview(tier, key, el) {
+            const style = currentStyles.styles[tier][key];
+            if (!style) return;
+
+            // Clean
+            el.style.background = 'none'; el.style.backgroundImage = 'none';
+            const content = el.querySelector('.mini-preview-content');
+            if (content) content.style.color = '#fff';
+
+            // Construct BG String
+            // Use alpha=1 for config preview box itself usually, or maybe actual alpha?
+            // Let's use actual alpha for BG style, but 1 for Type solid text
+            let alpha = (style.glass_opacity !== undefined) ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#fff']).map(c => (key === 'bg_style') ? hexToRgba(c, alpha) : c);
+
+            let bg = colors[0];
+            if (style.type === 'linear') {
+                let cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+                bg = `linear-gradient(${style.angle || 90}deg, ${cs.join(',')})`;
+            } else if (style.type === 'radial') {
+                let cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+                bg = `radial-gradient(circle, ${cs.join(',')})`;
+            }
+
+            if (key === 'bg_style') {
+                el.style.background = bg;
+                el.style.border = `${style.border_width || 0}px solid ${style.border_color || 'transparent'}`;
+                // We don't really show blur in mini preview, just alpha
+            } else {
+                // Text Style Mode (Name/Rank)
+                // Removed checkerboard for contrast
+                el.style.background = 'transparent';
+
+                // Apply to Text
+                if (content) {
+                    if (style.type === 'solid') {
+                        content.style.background = 'none';
+                        content.style.webkitTextFillColor = 'initial';
+                        content.style.color = bg;
+                    } else {
+                        content.style.background = bg;
+                        content.style.webkitBackgroundClip = 'text';
+                        content.style.webkitTextFillColor = 'transparent';
+                    }
+                    if (style.shadow_size > 0) content.style.filter = `drop-shadow(0 0 ${style.shadow_size}px ${style.shadow_color})`;
+                    else content.style.filter = 'none';
+                }
+            }
+        }
+
+        function renderLivePreview(tier) {
+            const styles = currentStyles.styles[tier];
+            applyStyleToEl(document.getElementById(`lp-info-${tier}`), styles.bg_style, false);
+            applyStyleToEl(document.getElementById(`lp-name-${tier}`), styles.name_style, true);
+            applyStyleToEl(document.getElementById(`lp-rank-${tier}`), styles.rank_style, true);
+
+            const infoEl = document.getElementById(`lp-info-${tier}`);
+            infoEl.style.display = currentStyles.show_member_info ? 'block' : 'none';
+        }
+
+        function applyStyleToEl(el, style, isText) {
+            if (!el || !style) return;
+            // Similar logic to renderMiniPreview but on actual elements
+            let alpha = (style.glass_opacity !== undefined) ? style.glass_opacity : 1.0;
+            let colors = (style.colors || ['#fff']).map(c => (!isText) ? hexToRgba(c, alpha) : c);
+
+            let bg = colors[0];
+            if (style.type === 'linear') {
+                let cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+                bg = `linear-gradient(${style.angle || 90}deg, ${cs.join(',')})`;
+            } else if (style.type === 'radial') {
+                let cs = colors.length > 1 ? colors : [colors[0], colors[0]];
+                bg = `radial-gradient(circle, ${cs.join(',')})`;
+            }
+
+            if (isText) {
+                if (style.type === 'solid') {
+                    el.style.background = 'none'; el.style.webkitBackgroundClip = 'initial';
+                    el.style.webkitTextFillColor = 'initial'; el.style.color = bg;
+                } else {
+                    el.style.background = bg; el.style.webkitBackgroundClip = 'text';
+                    el.style.webkitTextFillColor = 'transparent';
+                }
+                el.style.textShadow = (style.shadow_size > 0) ? `0 0 ${style.shadow_size}px ${style.shadow_color}` : 'none';
+            } else {
+                el.style.background = bg;
+                el.style.backdropFilter = (style.glass_blur > 0) ? `blur(${style.glass_blur}px)` : 'none';
+                el.style.boxShadow = (style.shadow_size > 0) ? `0 0 ${style.shadow_size}px ${style.shadow_color}` : 'none';
+                el.style.border = (style.border_width > 0) ? `${style.border_width}px solid ${style.border_color}` : 'none';
+            }
+        }
+
+        // --- GIF Upload ---
+        async function uploadGif(tier) {
+            const f = document.getElementById('file-' + tier).files[0];
+            if (!f) return;
+            document.getElementById('loading-' + tier).style.display = 'flex';
+            const fd = new FormData(); fd.append('file', f); fd.append('tier', tier);
+            try {
+                const r = await fetch('/api/members/upload_gif', { method: 'POST', body: fd });
+                const d = await r.json();
+                if (d.success) location.reload(); else alert(d.error);
+            } catch (e) { alert('Error'); }
+        }
+        async function resetGif(tier) {
+            if (!confirm('Reset?')) return;
+            const r = await fetch('/api/members/reset_gif', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tier }) });
+            if ((await r.json()).success) location.reload();
+        }
+
+        init();
+    </script>
+    <footer style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 0.85em;">
+        © 2025 Souris Ray. All rights reserved. | <a href="https://ethanschoonover.com/solarized/" target="_blank"
+            style="color: inherit; text-decoration: none;">Solarized</a> Palette
+    </footer>
+</body>
+
+
+</html>
