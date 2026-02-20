@@ -54,6 +54,8 @@ Never miss a SuperChat or membership message again.
 
 ## Getting Started
 
+Note: This is a plugin for [blivechat](https://github.com/xfgryujk/blivechat). Ensure that you have it installed properly before proceeding.
+
 **1. Download BiliUtility**  
 Download the latest `biliutility.zip` from the [GitHub Releases](https://github.com/SourisRay/v2_BiliUtility/releases) page and extract it.
 
